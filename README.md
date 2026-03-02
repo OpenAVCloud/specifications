@@ -14,11 +14,13 @@
 
 ## Specifications
 
+All specifications are maintained in Markdown format and converted from the official deliverables.
+
 | Specification | Version | Description |
 |---------------|---------|-------------|
-| [AV Device Taxonomy Guidelines](device-taxonomy/OAVC-AV-Device-Taxonomy-Guidelines.md) | 0.2 | Taxonomy of AV devices organized into categories based on their function, usage context, and technical characteristics |
-| [AV Device Minimum Functionality Guidelines](min-device-functionality/OAVC-AV-Device-Minimum-Functionality-Guidelines.md) | 1.0 | Minimum functionality requirements for AV devices including device status, inventory, operations, networking, and discovery |
-| [AV Device Security Guidelines](security-guidelines/OAVC-AV-Device-Security-Guidelines.md) | 1.0 | Security requirements covering firmware integrity, secure communications, authentication, data protection, and vulnerability management |
+| [AV Device Taxonomy Guidelines](device-taxonomy/OAVC-AV-Device-Taxonomy-Guidelines.md) | 0.3 | Taxonomy of AV devices organized into categories based on their function, usage context, and technical characteristics |
+| [AV Device Minimum Functionality Guidelines](min-device-functionality/OAVC-AV-Device-Minimum-Functionality-Guidelines.md) | 1.1 | Minimum functionality requirements for AV devices including device status, inventory, operations, networking, and discovery |
+| [AV Device Security Guidelines](security-guidelines/OAVC-AV-Device-Security-Guidelines.md) | 1.1 | Security requirements covering firmware integrity, secure communications, authentication, data protection, and vulnerability management |
 
 ## Converting to PDF
 
