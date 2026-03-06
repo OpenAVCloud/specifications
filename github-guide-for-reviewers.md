@@ -15,8 +15,9 @@ Edited March 5, 2026
 5. [Reviewing Documents via the Web Interface](#5-reviewing-documents-via-the-web-interface)
 6. [Reviewing Documents via the Command Line](#6-reviewing-documents-via-the-command-line)
 7. [Using the GitHub CLI (gh)](#7-using-the-github-cli-gh)
-8. [Best Practices for Document Reviews](#8-best-practices-for-document-reviews)
-9. [Quick Reference](#9-quick-reference)
+8. [Using GitHub Desktop (Graphical Interface)](#8-using-github-desktop-graphical-interface)
+9. [Best Practices for Document Reviews](#9-best-practices-for-document-reviews)
+10. [Quick Reference and Learning Resources](#10-quick-reference-and-learning-resources)
 
 ---
 
@@ -516,7 +517,147 @@ gh issue comment 45 --body "I agree with this assessment"
 
 ---
 
-## 8. Best Practices for Document Reviews
+## 8. Using GitHub Desktop (Graphical Interface)
+
+GitHub Desktop is a free, open-source graphical application that provides a visual interface for Git and GitHub operations. It is ideal for users who prefer a GUI over command-line tools.
+
+### Installing GitHub Desktop
+
+#### Windows and macOS
+
+1. Download GitHub Desktop from **https://desktop.github.com**
+2. Run the installer and follow the setup wizard
+3. Sign in with your GitHub account when prompted
+4. Configure your Git name and email if not already set
+
+#### Linux
+
+GitHub Desktop does not have official Linux support, but community forks exist. Alternatively, consider these Linux-native GUI tools:
+
+- **GitKraken** (https://www.gitkraken.com)
+- **Sublime Merge** (https://www.sublimemerge.com)
+- **Git Cola** (https://git-cola.github.io)
+
+### Cloning a Repository with GitHub Desktop
+
+1. Click **File > Clone repository**
+2. Select the **GitHub.com** tab to see repositories you have access to
+3. Choose the repository and select a local path for the clone
+4. Click **Clone**
+
+Alternatively, use the **URL** tab to clone any repository by pasting its HTTPS or SSH URL.
+
+### Creating a Branch
+
+1. Click the **Current Branch** dropdown at the top of the window
+2. Click **New Branch**
+3. Enter a descriptive branch name (e.g., `review/security-requirements`)
+4. Select the branch you want to base your new branch on (usually `main`)
+5. Click **Create Branch**
+
+GitHub Desktop automatically switches to your new branch.
+
+### Making and Viewing Changes
+
+1. Open the repository folder in your preferred text editor
+2. Make changes to the markdown files
+3. Return to GitHub Desktop to see your changes
+
+The **Changes** tab shows:
+- A list of modified files on the left
+- A visual diff of the selected file on the right
+- Red highlights for deletions
+- Green highlights for additions
+
+### Committing Changes
+
+1. Review your changes in the diff view
+2. Check the boxes next to files you want to include in the commit
+3. Write a commit message in the **Summary** field (required)
+4. Optionally add a detailed description in the **Description** field
+5. Click **Commit to [branch-name]**
+
+### Publishing and Pushing Branches
+
+After your first commit on a new branch:
+
+1. Click **Publish branch** to push it to GitHub
+2. For subsequent commits, click **Push origin** to upload new commits
+
+### Creating a Pull Request
+
+After pushing your branch:
+
+1. Click **Branch > Create Pull Request** or click the **Create Pull Request** button
+2. GitHub Desktop opens your browser to the pull request creation page
+3. Fill in the title and description
+4. Assign reviewers if needed
+5. Click **Create pull request**
+
+### Viewing Pull Requests
+
+1. Click **Branch > View Pull Requests**
+2. Or use **Repository > View on GitHub** to open the repository in your browser
+
+### Fetching and Pulling Changes
+
+Keep your local repository up to date with remote changes:
+
+- **Fetch:** Click **Fetch origin** to check for new commits without merging them
+- **Pull:** If new commits are available, the button changes to **Pull origin**; click it to download and merge changes
+
+### Switching Branches
+
+1. Click the **Current Branch** dropdown
+2. Select the branch you want to switch to from the list
+3. GitHub Desktop checks out that branch
+
+If you have uncommitted changes, GitHub Desktop warns you and offers to stash them.
+
+### Resolving Merge Conflicts
+
+When a merge conflict occurs:
+
+1. GitHub Desktop highlights the conflicted files
+2. Click **Open in [your editor]** to resolve conflicts manually
+3. Look for conflict markers in the file:
+
+```
+<<<<<<< HEAD
+Your changes
+=======
+Incoming changes
+>>>>>>> branch-name
+```
+
+4. Edit the file to resolve the conflict by keeping the desired changes and removing the markers
+5. Save the file and return to GitHub Desktop
+6. Mark the conflict as resolved by committing the changes
+
+### GitHub Desktop Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl/Cmd+Shift+F` | Fetch from remote |
+| `Ctrl/Cmd+P` | Push to remote |
+| `Ctrl/Cmd+T` | Create new branch |
+| `Ctrl/Cmd+B` | Switch branch |
+| `Ctrl/Cmd+Enter` | Commit changes |
+| `Ctrl/Cmd+1` | Show changes view |
+| `Ctrl/Cmd+2` | Show history view |
+| `Ctrl/Cmd+Shift+N` | Create new repository |
+
+### Advantages of GitHub Desktop
+
+- **Visual diff:** See changes side-by-side with syntax highlighting
+- **Easy conflict resolution:** Visual indicators for merge conflicts
+- **Branch management:** Point-and-click branch creation and switching
+- **Integrated with GitHub:** Direct access to pull requests and issues
+- **Beginner-friendly:** No command-line knowledge required
+
+---
+
+## 9. Best Practices for Document Reviews
 
 ### Writing Effective Comments
 
@@ -566,7 +707,7 @@ Use tables for structured data:
 
 ---
 
-## 9. Quick Reference
+## 10. Quick Reference and Learning Resources
 
 ### Common Git Commands
 
@@ -602,6 +743,41 @@ Use tables for structured data:
 | `g` `i` | Go to issues tab |
 | `g` `p` | Go to pull requests tab |
 | `?` | Show all shortcuts |
+
+### Video Learning Resources
+
+These curated video tutorials provide comprehensive guidance for learning Git and GitHub:
+
+#### Comprehensive Git and GitHub Tutorials
+
+**Git and GitHub for Beginners - Crash Course** by freeCodeCamp.org
+https://www.youtube.com/watch?v=RGOj5yH7evk
+Duration: 1 hour
+Covers Git basics, GitHub workflows, branching, merging, and pull requests. Excellent starting point for complete beginners with hands-on examples.
+
+**Git Tutorial for Beginners: Learn Git in 1 Hour** by Programming with Mosh
+https://www.youtube.com/watch?v=8JJ101D3knE
+Duration: 1 hour
+Focuses on Git fundamentals with clear explanations of commits, branches, merging, and rebasing. Includes practical examples and best practices.
+
+#### Graphical Tool Tutorial
+
+**GitHub Desktop Tutorial - Beginner's Training Guide** by Tech with Tim
+https://www.youtube.com/watch?v=8Dd7KRpKeaE
+Duration: 25 minutes
+Step-by-step walkthrough of GitHub Desktop, covering installation, cloning, branching, committing, and pull requests. Perfect complement to section 8 of this guide.
+
+#### Advanced Topics
+
+**Advanced Git Tutorial** by freeCodeCamp.org
+https://www.youtube.com/watch?v=qsTthZi23VE
+Duration: 40 minutes
+Covers interactive rebase, cherry-picking, reflog, and advanced merging strategies. Recommended after mastering the basics.
+
+**Pull Request Best Practices** by GitHub
+https://www.youtube.com/watch?v=8lGpZkjnkt4
+Duration: 15 minutes
+Official GitHub guidance on creating effective pull requests, code review workflows, and collaboration patterns.
 
 ### Getting Help
 
