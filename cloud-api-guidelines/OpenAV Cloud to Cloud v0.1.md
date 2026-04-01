@@ -13,7 +13,7 @@ This specification builds on industry best practices, with an emphasis on:
 ### 2.1 Architectural Style
 - RESTful API design
 - Stateless interactions for scalability and reliability
-- Resource-oriented URLs are preferred
+- Resource-oriented URLs are preferred (e.g., `/v1/devices`, `/v1/devices/{deviceId}/capabilities`)
 - JSON for request and response payloads
 
 ### 2.2 Capability-Centric Model
@@ -53,7 +53,7 @@ both are v1 of the overall API spec, but the endpoint itself has been updated:
 - DELETE – Delete resources
 
 ### 4.2 Idempotency
-Idempotency rules for device-related operations is preferred when possible, but is not strictly required
+Idempotency rules for device-related operations is preferred when possible, but is not strictly required. For example, operations such as triggering a firmware update may not be idempotent by nature, as the outcome depends on the current state of the device at the time of execution.
 
 ## 5.0 Pagination
 - Pagination shall be possible for limiting the number of records returned.
@@ -81,12 +81,12 @@ Idempotency rules for device-related operations is preferred when possible, but 
 ### 6.2 Descriptive Payloads
 
 Example response:
-```
+```json
 {
-  "userId": 123,
-  "userName": "JohnDoe",
-  "email": "john.doe@example.com",
-  "createdAt": "2023-10-01T12:00:00Z"
+  "deviceId": "abc-123",
+  "name": "Conference Room Speaker",
+  "type": "audio-output",
+  "online": true
 }
 ```
 
@@ -97,7 +97,7 @@ Example response:
 - Validation failures must return clear, actionable error information.
 
 ### 7.2 Standard Error Structure
-- Refer to RFC7807
+- Refer to RFC9457 (which obsoletes RFC7807)
 - Error responses include a consistent JSON structure.
 - Error payloads should include:
   - A machine-readable error code
@@ -125,10 +125,18 @@ Example error response:
 
 ## 9.0 Authentication & Security
 ### 9.1 Authentication
-- OAuth 2.0 is the initial authentication mechanism
+- OAuth 2.0 is used for authorization and access delegation
 - Access is granted via OAuth tokens
 - Token-based access enables cross-cloud integration scenarios
-- For cloud-to-cloud integration scenarios, implementations must support the Client Credentials Grant (RFC 6749 §4.4). Other grant types (e.g., Authorization Code, Device Flow) may be supported to accommodate additional use cases.
+- Authentication of the resource owner or end-user is outside the scope
+  of this specification and left to each implementation.
+- For cloud-to-cloud integration scenarios, implementations must support
+  the Client Credentials Grant (RFC 6749 §4.4). Other grant types
+  (e.g., Authorization Code, Device Flow) may be supported to
+  accommodate additional use cases.
+- Access tokens must be transmitted using the Authorization request
+  header with the Bearer scheme, as defined in RFC 6750.
+  Example: `Authorization: Bearer <token>`
 
 ### 9.2 Authorization
 - Role-Based Access Control (RBAC) should be supported where applicable
@@ -236,3 +244,12 @@ Details of event schemas and lifecycle management are part of a dedicated event-
 ### 13.4 User and organization registration
 ### 13.5 Agent-to-agent (A2A) integration
 ### 13.6 Model Context Protocol (MCP) and AI agent interoperability
+
+## 14.0 Related Specifications
+The following OpenAV Cloud specifications are related to this document:
+
+| Specification | Version | Relationship |
+|---|---|---|
+| [AV Device Taxonomy Guidelines](../device-taxonomy/OAVC-AV-Device-Taxonomy-Guidelines.md) | 0.3 | Defines the device categories and taxonomy referenced in Section 12 (Capabilities Model) |
+| [AV Device Minimum Functionality Guidelines](../min-device-functionality/OAVC-AV-Device-Minimum-Functionality-Guidelines.md) | 1.1 | Defines the minimum device functionality that implementations of this API are expected to expose |
+| [AV Device Security Guidelines](../security-guidelines/OAVC-AV-Device-Security-Guidelines.md) | 1.1 | Defines the security requirements that complement Section 9 (Authentication & Security) of this specification |
