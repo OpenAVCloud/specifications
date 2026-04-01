@@ -59,6 +59,19 @@ Idempotency rules for device-related operations is preferred when possible, but 
 - Pagination shall be possible for limiting the number of records returned.
 - It must be possible to seek through pages of records, limiting the number of records returned in a page.
 - When specifying records to be returned, they should be done from a durable identifier describing the record (as opposed to the index or position of the record in the collection)
+- Paginated responses must use the following envelope structure:
+```json
+{
+  "data": [ ... ],
+  "pagination": {
+    "nextCursor": "opaque-token-value"
+  }
+}
+```
+- `data` contains the array of returned resources
+- `nextCursor` is an opaque string token used to retrieve the next page
+- When no further pages exist, `nextCursor` must be `null`
+- The internal format of `nextCursor` is left to the implementer
 
 ## 6.0 Request & Response Formatting
 ### 6.1 JSON Format
@@ -115,6 +128,7 @@ Example error response:
 - OAuth 2.0 is the initial authentication mechanism
 - Access is granted via OAuth tokens
 - Token-based access enables cross-cloud integration scenarios
+- For cloud-to-cloud integration scenarios, implementations must support the Client Credentials Grant (RFC 6749 §4.4). Other grant types (e.g., Authorization Code, Device Flow) may be supported to accommodate additional use cases.
 
 ### 9.2 Authorization
 - Role-Based Access Control (RBAC) should be supported where applicable
@@ -146,6 +160,11 @@ GET /v1/devices
 ```
 - Returns a paginated list of devices accessible to the caller
 - Supports filtering, sorting, and pagination via query parameters
+#### Get Device
+```
+GET /v1/devices/{deviceId}
+```
+- Returns the details of a single device accessible to the caller
 ### 11.2 Capabilities
 #### Get Device Capabilities
 ```
@@ -153,6 +172,24 @@ GET /v1/devices/{deviceId}/capabilities
 ```
 - Returns the set of capabilities supported by the specified device
 - Capabilities are enumerated using a standard list where possible
+- Each capability entry in the response must include the following minimum fields:
+  - `capabilityId`: A non-empty string that uniquely identifies the capability. Manufacturer-specific capabilities should use a namespaced format (e.g., `com.{manufacturer}.{feature}`) to avoid conflicts with future common capability identifiers.
+  - `name`: A human-readable label for the capability. This field is optional
+
+Example response:
+```json
+{
+  "capabilities": [
+    {
+      "capabilityId": "audio-mute"
+    },
+    {
+      "capabilityId": "com.manufacturer.auto-gain-control",
+      "name": "Auto Gain Control"
+    }
+  ]
+}
+```
 ## 12.0 Capabilities Model
 ### 12.1 Capability Enumeration
 - Each device exposes a defined list of capabilities
