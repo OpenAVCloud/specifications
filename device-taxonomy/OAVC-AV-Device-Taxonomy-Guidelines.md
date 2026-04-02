@@ -1,8 +1,8 @@
 # AV Device Taxonomy Guidelines
 
-Document Version: 1.0  
+Document Version: 1.1  
 Prepared by: OpenAVCloud Technical Working Group  
-Date: March 5, 2026
+Date: April 2, 2026
 
 # **Table of Contents** {#table-of-contents}
 
@@ -87,6 +87,7 @@ This section captures the history of changes made to this document.
 | Version | Date | Reason for Change |
 | :---- | :---- | :---- |
 | 1.0 | 2026-03-05 | Initial release of AV Device Taxonomy Guidelines. |
+| 1.1 | 2026-04-02 | Incorporated Community Feedback |
 
 1. # **Purpose** {#purpose}
 
@@ -225,6 +226,8 @@ Examples of these may include UPS Systems, Power Conditioners, and Power Distrib
 2. # **Networking Equipment**  {#networking-equipment}
 
 Examples of these may include Switches, Routers, Wireless Access Points, and Network Gateways.
+
+Network equipment are part of a larger Network Infrastructure category that may also include Network Management Software.  However, there are many guidelines that already address Network Infrastructure and this document only highlights physical equipment as it is adjacent to AV devices that may be integrated in deployed systems.
 
 # 
 
