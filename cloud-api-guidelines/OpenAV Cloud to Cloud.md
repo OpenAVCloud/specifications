@@ -1,5 +1,5 @@
 # OpenAV Cloud-to-Cloud REST API
-Initial Specification (v0.2 – Draft)
+Initial Specification (v0.3 – Draft)
 ## 1.0 Purpose & Goals
 The goal of this API is to enable **cloud-to-cloud interoperability** between OpenAV-compatible systems. The API is intended to expose device and system capabilities in a **capability-centric**, standards-aligned way that supports scalable integration across multiple vendors and cloud platforms.
 
@@ -13,10 +13,10 @@ This guideline builds on industry best practices, with an emphasis on:
 This section captures the history of changes made to this document.
 
   -----------------------------------------------------------------------
-  Version                 Date                    Reason for Change
-  ----------------------- ----------------------- -----------------------
-  0.2                     2026-04-03              Draft
-
+  | Version|Date|Reason for Change|
+  |---|---|---|
+  0.2|2026-04-03|Draft|
+  0.3|2026-04-13|Update per feedback|
   -----------------------------------------------------------------------
 
 ## 3.0 Design Principles
@@ -75,17 +75,31 @@ Idempotency rules for device-related operations is preferred when possible, but 
 - All request and response bodies use JSON
 - Content-Type header:    ```application/json```
 
-### 7.2 Descriptive Payloads
+### 7.2 Date and Time
+- DateTime in ISO-8601 format 
+- All date and time are in UTC
+
+### 7.3 Descriptive Payloads
 
 Example response:
 ```
 {
-  "userId": 123,
-  "userName": "JohnDoe",
-  "email": "john.doe@example.com",
-  "createdAt": "2023-10-01T12:00:00Z"
+  "deviceState": "ONLINE",
+  "hardwareIdentity": {
+    "serialNumber": "1232123456"
+  },
+  "softwareIdentity": {
+    "firmwareVersion": "4.5.0",
+    "model": "Microphone"
+  },
+  "capabilities": [
+    "firmware-version",
+    "audio-mute"
+  ]
 }
 ```
+#### 7.3.1 Extensibility
+Client may ignore data returned that doesn't fit the spec (allows for future additions)
 
 ## 8.0 Validation & Error Handling
 ### 8.1 Validation
@@ -105,7 +119,7 @@ Example error response:
 {
   "type": "",
   "title": "Requested device(s) could not be found.",
-  "status": 404,
+  "errorId": 123,
   "detail": "Device information is not available",
   "instance": "",
   "traceId": "df41558a-01e8-4db1-bdfe-034de7b32c5e"
@@ -136,7 +150,7 @@ Example error response:
 
 ### 10.3 Transport Security
 - All endpoints must use HTTPS
-- TLS is required for data in transit
+- TLS 1.2+ is required for data in transit
 - Sensitive data should be encrypted at rest where applicable
 
 ## 11.0 Discovery
@@ -207,10 +221,10 @@ Possible mechanisms include:
 
 Details of event schemas and lifecycle management are part of a dedicated event-driven section to be expanded
 
-## 16.0 Future Topics (Out of Scope for v1.0)
-The following topics are explicitly out of scope for the initial v1.0 release but are expected to be addressed in future iterations:
+## 16.0 Future Topics (Out of Scope for initial revision)
+The following topics are explicitly out of scope for the initial release but are expected to be addressed in future iterations:
 
-### 16.1 Device claiming and onboarding
+### 16.1 Device claiming, privisioning, and onboarding
 ### 16.2 User and organization registration
 ### 16.3 Agent-to-agent (A2A) integration
 ### 16.4 Model Context Protocol (MCP) and AI agent interoperability
