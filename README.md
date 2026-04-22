@@ -22,9 +22,22 @@ All specifications are maintained in Markdown format and converted from the offi
 | [AV Device Minimum Functionality Guidelines](min-device-functionality/OAVC-AV-Device-Minimum-Functionality-Guidelines.md) | 1.1 | Minimum functionality requirements for AV devices including device status, inventory, operations, networking, and discovery |
 | [AV Device Security Guidelines](security-guidelines/OAVC-AV-Device-Security-Guidelines.md) | 1.1 | Security requirements covering firmware integrity, secure communications, authentication, data protection, and vulnerability management |
 
-## Converting to PDF
+## PDF Downloads
 
-A script is provided to convert all Markdown specification files to PDF format using [pandoc](https://pandoc.org/).
+PDFs of every specification (excluding this README) are built automatically on every push to `main` by the [Build PDFs](.github/workflows/build-pdfs.yml) GitHub Actions workflow.
+
+To download them:
+
+1. Open the **Actions** tab of this repository on GitHub.
+2. Select the most recent **Build PDFs** run on the `main` branch.
+3. Scroll to the **Artifacts** section at the bottom of the run summary.
+4. Click the **pdfs** artifact to download a zip containing all generated PDFs.
+
+Note: GitHub artifacts expire after 90 days by default, and downloading requires a GitHub account with access to this repository.
+
+## Converting to PDF Locally
+
+A script is also provided to convert all Markdown specification files to PDF format using [pandoc](https://pandoc.org/).
 
 ### Usage
 
