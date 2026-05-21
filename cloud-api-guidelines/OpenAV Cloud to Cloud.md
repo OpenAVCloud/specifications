@@ -198,6 +198,11 @@ GET /v1/devices
 ```
 - Returns a paginated list of devices accessible to the caller
 - Supports filtering, sorting, and pagination via query parameters
+#### Get Device
+```
+GET /v1/devices/{deviceId}
+```
+- Returns the details of a single device accessible to the caller
 ### 12.2 Capabilities
 #### Get Device Capabilities
 ```
