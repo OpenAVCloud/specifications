@@ -151,7 +151,7 @@ Example error response:
 ```
 
 ## 9.0 Documentation
-- The API must be documented using the OpenAPI initiative (formally Swagger, now OAS) guidelines.
+- The API must be documented using the OpenAPI initiative (formerly Swagger, now OAS) guidelines.
 - Documentation should include:
   - Endpoint definitions
   - Request and response schemas
@@ -253,7 +253,7 @@ Details of event schemas and lifecycle management are part of a dedicated event-
 ## 16.0 Future Topics (Out of Scope for initial revision)
 The following topics are explicitly out of scope for the initial release but are expected to be addressed in future iterations:
 
-### 16.1 Device claiming, privisioning, and onboarding
+### 16.1 Device claiming, provisioning, and onboarding
 ### 16.2 User and organization registration
 ### 16.3 Agent-to-agent (A2A) integration
 ### 16.4 Model Context Protocol (MCP) and AI agent interoperability
@@ -263,6 +263,6 @@ The following OpenAV Cloud specifications are related to this document:
 
 | Specification | Version | Relationship |
 |---|---|---|
-| [AV Device Taxonomy Guidelines](../device-taxonomy/OAVC-AV-Device-Taxonomy-Guidelines.md) | 1.1 | Defines the device categories and taxonomy referenced in Section 12 (Capabilities Model) |
+| [AV Device Taxonomy Guidelines](../device-taxonomy/OAVC-AV-Device-Taxonomy-Guidelines.md) | 1.1 | Defines the device categories and taxonomy referenced in Section 13 (Capabilities Model) |
 | [AV Device Minimum Functionality Guidelines](../min-device-functionality/OAVC-AV-Device-Minimum-Functionality-Guidelines.md) | 1.1 | Defines the minimum device functionality that implementations of this API are expected to expose |
-| [AV Device Security Guidelines](../security-guidelines/OAVC-AV-Device-Security-Guidelines.md) | 1.1 | Defines the security requirements that complement Section 9 (Authentication & Security) of this specification |
+| [AV Device Security Guidelines](../security-guidelines/OAVC-AV-Device-Security-Guidelines.md) | 1.1 | Defines the security requirements that complement Section 10 (Authentication & Security) of this specification |
