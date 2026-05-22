@@ -27,13 +27,15 @@ This section captures the history of changes made to this document.
 - JSON for request and response payloads
 
 ### 3.2 Capability-Centric Model
-- The API is capability-centric, not strictly device-centric
+- The API is capability-centric, not strictly device-centric, as a means of defining a functionality applicable across one or more devices.
 - Devices expose one or more capabilities
 - Capabilities may be:
-  - Common (standardized across manufacturers)
-  - Manufacturer-specific (extensions)
-- HATEOAS-style discoverability where appropriate
-- See Section 13
+  - Standardized across manufacturers (e.g. `audio-mute`)
+  - Manufacturer-specific extensions, but namespaced to avoid collisions (e.g. `com.manufacturer.capability-name`)
+- To reduce or eliminate client-coded assumptions for what interactions are possible with devices (and their correpsonding firmware versions), the following principles must be upheld:
+  - API clients must be able to dynamically determine what devices are capable of at runtime using HATEOAS-inspired discoverability
+  - Every capability must have a means of indicating the superset of all related APIs pertaining to it so clients can establish the relationship between any given capability and its corresponding APIs either during development, or at application runtime.
+- See Section 13 for more details
 
 ### 3.3 Standards Alignment
 - OAuth 2.0 for authentication
@@ -100,7 +102,7 @@ Idempotency rules for device-related operations is preferred when possible, but 
 - Content-Type header:    ```application/json```
 
 ### 7.2 Date and Time
-- DateTime in ISO-8601 format 
+- DateTime in ISO-8601 format
 - All date and time are in UTC
 
 ### 7.3 Descriptive Payloads
@@ -197,7 +199,17 @@ are considered **future iterations** and out of *initial* scope
 GET /v1/devices
 ```
 - Returns a paginated list of devices accessible to the caller
-- Supports filtering, sorting, and pagination via query parameters
+- Supports filtering, sorting, and pagination via query parameters specified in Section 6.
+- Each device must minimally implement the following field as described in Section 13.
+```
+{
+  "capabilities": [
+    "firmware-version",
+    "audio-mute"
+  ]
+}
+```
+
 #### Get Device
 ```
 GET /v1/devices/{deviceId}
@@ -210,17 +222,39 @@ GET /v1/devices/{deviceId}/capabilities
 ```
 - Returns the set of capabilities supported by the specified device
 - Capabilities are enumerated using a standard list where possible
+- Each capability must provide a mapping to its corresponding APIs listed within the Open API specification.
+  - One recommended approach shown below demonstrates how to use the optional [operationId field](https://swagger.io/docs/specification/v3_0/paths-and-operations/#operationid) as a self-documenting means to in a human-readable and machine-readable way understand what interactions are possible given a device's list of capabilities.
+```
+[
+  {
+    "name": "audio-mute",
+    "operationIds": [
+      "deviceAudioMute",
+      "updateDeviceAudioMute",
+      "subscribeDeviceAudioMute",
+      "unsubscribeDeviceAudioMute"
+    ]
+  },
+  {
+    "name": "reboot",
+    "operationIds": [
+      "rebootDevice"
+    ]
+  }
+  ...
+]
+```
+
 ## 13.0 Capabilities Model
 ### 13.1 Capability Enumeration
 - Each device exposes a defined list of capabilities
-  - Capabilities allow one to write code that is feature-focused instead of device-focused. When capabilities are used to check for device features, this meets the Open-Closed Principle of SOLID when more new devices are added, or more features are added to an existing devices.
+  - Capabilities allow one to write code that is feature-focused instead of device-focused. When capabilities are used to check for device features, this meets the Open-Closed Principle of SOLID when new devices are supported by the API, or features are added to existing devices.
   - This works on the same principle as interfaces in object-oriented programming; the interaction with the capability is considered interchangeable when...
     - Two or more devices implement the same capability
     - Two or more firmware versions of the same model of device implement the same capability
-- A future OpenAV effort will define a standardized capability registry
-- In the future, common capabilities will have a common definition
+- A future OpenAV effort will define a standardized capability registry to identify common definitions
 
-Example: ```802.1x configuration```
+Examples could include, but are not limited to: Audio Mute, Reboot, 802.1x Certificate Configuration
 
 ### 13.2 Constraints
 Capabilities may share common semantics across devices but differ in constraints, such as:
