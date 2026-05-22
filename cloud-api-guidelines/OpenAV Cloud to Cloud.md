@@ -95,6 +95,19 @@ Idempotency rules for device-related operations is preferred when possible, but 
 - Pagination shall be possible for limiting the number of records returned.
 - It must be possible to seek through pages of records, limiting the number of records returned in a page.
 - When specifying records to be returned, they should be done from a durable identifier describing the record (as opposed to the index or position of the record in the collection)
+- Paginated responses must use the following envelope structure:
+```json
+{
+  "data": [ ... ],
+  "pagination": {
+    "nextCursor": "opaque-token-value"
+  }
+}
+```
+- `data` contains the array of returned resources
+- `nextCursor` is an opaque string token used to retrieve the next page
+- When no further pages exist, `nextCursor` must be `null`
+- The internal format of `nextCursor` is left to the implementer
 
 ## 7.0 Request & Response Formatting
 ### 7.1 JSON Format
