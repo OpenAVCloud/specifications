@@ -123,6 +123,7 @@ Idempotency rules for device-related operations is preferred when possible, but 
 Example response:
 ```
 {
+  "deviceId": "abc-123",
   "deviceState": "ONLINE",
   "hardwareIdentity": {
     "serialNumber": "1232123456"
