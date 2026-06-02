@@ -1,5 +1,5 @@
 # OpenAV Cloud-to-Cloud REST API
-Initial Specification (v0.3 – Draft)
+Guidelines v1.0
 ## 1.0 Purpose & Goals
 The goal of this API is to enable **cloud-to-cloud interoperability** between OpenAV-compatible systems. The API is intended to expose device and system capabilities in a **capability-centric**, standards-aligned way that supports scalable integration across multiple vendors and cloud platforms.
 
@@ -17,6 +17,7 @@ This section captures the history of changes made to this document.
   |---|---|---|
   0.2|2026-04-03|Draft|
   0.3|2026-04-13|Update per feedback|
+  1.0|2026-06-02|Initial release|
   -----------------------------------------------------------------------
 
 ## 3.0 Design Principles
