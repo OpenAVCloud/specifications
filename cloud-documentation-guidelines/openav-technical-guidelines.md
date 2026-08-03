@@ -1,6 +1,6 @@
 # OpenAV Technical Guidelines — Cloud API Documentation Requirements
 
-> **Status:** 1.0 · Final
+> **Status:** 1.1 · Draft Update (Working Group Proposal)
 > **Applies to:** Any manufacturer offering a cloud API for integration with OpenAV.
 > **Worked example:** A complete reference that satisfies every requirement below lives in [`sample-openav-cloud/`](./sample-openav-cloud/).
 
@@ -17,7 +17,7 @@
 ## Table of Contents
 
 1. [Introduction & Scope](#1-introduction--scope)
-2. [Foundational Requirement: OpenAPI as the Standard](#2-foundational-requirement-openapi-as-the-standard)
+2. [Foundational Requirement: A Machine-Readable Contract](#2-foundational-requirement-a-machine-readable-contract)
 3. [General API Information](#3-general-api-information)
 4. [Authentication](#4-authentication)
 5. [Authorization](#5-authorization)
@@ -27,7 +27,7 @@
 9. [Rate Limiting & Other Limits](#9-rate-limiting--other-limits)
 10. [Versioning & Lifecycle](#10-versioning--lifecycle)
 11. [Pagination, Filtering & Sorting](#11-pagination-filtering--sorting)
-12. [Webhooks / Events / Async](#12-webhooks--events--async-conditional)
+12. [Asynchronous & Event-Driven Interfaces](#12-asynchronous--event-driven-interfaces)
 13. [Security Documentation](#13-security-documentation)
 14. [Operational Behavior](#14-operational-behavior)
 15. [Examples, SDKs & Tooling](#15-examples-sdks--tooling)
@@ -47,6 +47,7 @@ without guesswork or vendor support tickets.
 - **Audience.** Manufacturers with an existing or new cloud API, and the developers who integrate with it.
 - **In scope:** how the API is documented. **Out of scope:** how the API is designed, built, or operated.
 - **Conformance.** An API is OpenAV-compatible when its documentation satisfies **every MUST** in this guideline and passes OpenAV validation (Section 17). The full list of MUST items is in [Appendix C](#appendix-c--conformance-checklist).
+- **Sections are mandatory; some answers may be "not yet."** Where a required detail genuinely does not exist yet or does not apply, the section is still kept and the gap stated explicitly — see [Appendix C](#appendix-c--conformance-checklist), *Declaration of missing or pending information*. A documented gap is conformant; a missing section is not.
 
 ### Normative language
 
@@ -61,21 +62,43 @@ and **OPTIONAL** are to be interpreted as described in **RFC 2119** and **RFC 81
 
 ---
 
-## 2. Foundational Requirement: OpenAPI as the Standard
+## 2. Foundational Requirement: A Machine-Readable Contract
 
-All documentation is anchored to a single machine-readable contract, following the
-[OpenAPI Specification](https://en.wikipedia.org/wiki/OpenAPI_Specification).
+All documentation is anchored to a machine-readable contract. For RESTful APIs that contract is
+an [OpenAPI](https://en.wikipedia.org/wiki/OpenAPI_Specification) document; other architectures
+use the equivalent standard for their protocol (§2.1).
+
+### 2.1 Machine-Readable Specifications
+
+Every compliant API **MUST** provide a machine-readable specification corresponding to its
+underlying architecture:
+
+| Architecture | Required specification format |
+|---|---|
+| RESTful APIs | **OpenAPI 3.1.x** document (`openapi.yaml` / `openapi.json`) |
+| Event-driven & WebSocket APIs | **AsyncAPI** specification |
+| GraphQL APIs | Complete, valid **GraphQL Schema Definition Language (SDL)** document |
+| gRPC / Protobuf services | Valid `.proto` definitions for every exposed service and message |
+
+An API that exposes more than one architecture (e.g., a REST control plane plus a WebSocket
+telemetry stream) **MUST** provide the corresponding specification for **each** surface.
 
 **Requirements**
 
-- The API **MUST** be described using an **OpenAPI 3.1.x** document.
-- A machine-readable spec (`openapi.yaml` or `openapi.json`) **MUST** be the single source of truth.
-- Human-readable documentation **SHOULD** be generated from the spec (e.g., Redoc, Swagger UI, Stoplight) so prose and contract never drift.
-- The spec **MUST** validate cleanly against the OpenAPI 3.1 schema with zero errors.
-- The spec **MUST** describe the **entire public API surface**. Undocumented ("hidden") endpoints are not permitted.
+- A machine-readable spec **MUST** be the single source of truth.
+- Human-readable documentation **SHOULD** be generated from the spec (e.g., Redoc, Swagger UI, Stoplight, AsyncAPI Generator) so prose and contract never drift.
+- The spec **MUST** validate cleanly, with zero errors, against the schema for its format (OpenAPI 3.1 schema, AsyncAPI schema, GraphQL SDL parse, `protoc` compile).
+- The spec **MUST** describe the **entire public API surface**. Undocumented ("hidden") endpoints, channels, or operations are not permitted.
+  - "Surface" is judged **per specification format**, not by HTTP path count. A GraphQL API that exposes a single transport endpoint (e.g., `GET`/`POST /graphql`) satisfies this requirement by documenting that endpoint plus a complete SDL schema — the schema, not the path list, is the surface. The same holds for a gRPC service endpoint or an MQTT broker: document the transport entry point, and the full operation set in the format's own specification.
 - The spec **MUST** be version-controlled and each published revision **MUST** be retrievable.
 
-**Minimum skeleton**
+> **Note on the examples in this document.** Sections 3–16 illustrate requirements with OpenAPI
+> 3.1 because REST is the most common case. Where a requirement names an OpenAPI construct, the
+> equivalent construct in the API's own specification format satisfies it — e.g., AsyncAPI
+> `channels`/`messages`/`operations`, GraphQL type and field definitions, or protobuf
+> `service`/`message` declarations.
+
+**Minimum OpenAPI skeleton**
 
 ```yaml
 openapi: 3.1.0
@@ -89,6 +112,28 @@ servers:
 paths: {}
 components: {}
 ```
+
+### 2.2 Purpose-Driven Endpoint Documentation
+
+Human-readable documentation **SHOULD** describe the **core business purpose and semantic
+context** of each endpoint or operation: what it is for, when a client should call it, and what
+it affects.
+
+Field-level descriptions, data types, and constraint definitions **SHOULD** be embedded directly
+in the machine-readable specification rather than repeated in Markdown tables. Duplicating the
+contract in prose creates maintenance overhead and drift; the specification is the single source
+of truth (§2.1), and generated reference documentation renders it for human readers.
+
+### 2.3 Supplemental Guides & Workflows
+
+Vendors **MAY** provide supplemental, human-readable guides for complex operational sequences or
+multi-step integration workflows — for example OAuth authentication handshakes, device
+provisioning sequences, or streaming setup. These guides serve to contextualize operations whose
+correct use is not immediately obvious from individual endpoint definitions, and are encouraged
+wherever a working integration requires calling several operations in a specific order.
+
+A "getting started" walkthrough is a special case of this and is separately **RECOMMENDED** —
+see Section 15.
 
 ---
 
@@ -198,10 +243,11 @@ Every operation must be fully described from the caller's perspective.
 **Requirements**
 
 - Each operation **MUST** define: `path`, HTTP method, a unique `operationId`, a `summary`, a `description`, and `tags` for grouping.
-- All parameters (`path`/`query`/`header`) **MUST** document name, location, type, whether required, and constraints.
+- All parameters (`path`/`query`/`header`) **MUST** document name, location, type, whether required, and constraints **in the specification itself**; restating them in external prose is not required (§2.2).
 - Request bodies **MUST** reference a schema and declare required fields and content type.
 - **All** responses — success and error — **MUST** be documented with status code and schema (Section 8).
 - At least one **request example** and one **response example** per operation **MUST** be provided.
+- Every example **MUST** validate against the schema it is declared under. Examples are part of the contract: a non-validating example is a documentation defect, not a cosmetic issue (§16).
 - Idempotency of each operation **SHOULD** be documented; if idempotency keys are supported, they **MUST** be documented (Section 14).
 
 **Example — documented operation**
@@ -254,7 +300,7 @@ Shapes of data must be explicit, reusable, and unambiguous.
 - Each field **MUST** document `type`, `format` (where relevant), whether it is `required`, and nullability.
 - Enumerations **MUST** list every allowed value.
 - **Units of measure** for physical/telemetry values **MUST** be documented (e.g., temperature in °C).
-- Field descriptions **SHOULD** be present for every non-obvious field.
+- Field descriptions **SHOULD** be present for every non-obvious field, written in the specification rather than in a parallel prose table (§2.2).
 
 **Example**
 
@@ -287,12 +333,13 @@ Errors are part of the contract and **MUST** be documented as thoroughly as succ
 
 **Requirements**
 
-- Every HTTP status code the API can return **MUST** be documented, per operation.
+- Every **application-level** status code the API can return **MUST** be documented per operation — specifically **all `4xx` client-error conditions** and **all `2xx` success conditions**.
+- Generic server-side infrastructure errors (`5xx`) generated by the web server, gateway, proxy, or load balancer fronting the API **need not** be enumerated exhaustively. Any `5xx` the application itself emits with a documented, application-specific meaning **MUST** be documented.
 - The error response body **MUST** be documented. A **single consistent format MUST** be used across the API; **RFC 9457 (Problem Details for HTTP APIs)** is **RECOMMENDED**.
 - A **catalog** of the API's application-level error codes/messages **MUST** be provided (Appendix-style table).
 - Each operation **MUST** document its possible failure modes and their causes.
 
-**Standard status codes to cover** (document each one your API can emit):
+**Standard status codes to cover** (document each application-level code your API can emit):
 
 | Code | Meaning | Typical cause |
 |---|---|---|
@@ -304,7 +351,7 @@ Errors are part of the contract and **MUST** be documented as thoroughly as succ
 | `409` Conflict | State conflict | Duplicate, version conflict, incompatible state. |
 | `422` Unprocessable | Semantic validation failed | Well-formed but invalid values. |
 | `429` Too Many Requests | Rate limited | Limit/quota exceeded (Section 9). |
-| `500` / `503` | Server error | Internal failure / temporarily unavailable. |
+| `500` / `503` | Server error | Internal failure / temporarily unavailable. Document application-emitted `5xx`; generic gateway/load-balancer `5xx` need not be enumerated. |
 
 **Example — RFC 9457 Problem Details**
 
@@ -441,19 +488,35 @@ components:
 
 ---
 
-## 12. Webhooks / Events / Async *(conditional)*
+## 12. Asynchronous & Event-Driven Interfaces
 
-**This section applies only if your API exposes webhooks or pushes events.**
-If it does, you **MUST** document them as below. If it does not, this section does not apply.
+For device-centric AV clouds the asynchronous surface — status changes, telemetry, presence,
+command results — is often as important as the synchronous request/response surface, and is
+documented to the same standard as Sections 6–8.
+
+**This section is mandatory for any API that pushes data to clients or to other clouds**, by any
+mechanism, including:
+
+- outbound **webhooks** (HTTP callbacks),
+- **WebSocket** connections and subscriptions,
+- **server-sent events (SSE)**,
+- **MQTT** or similar topic subscriptions,
+- **GraphQL subscriptions**,
+- **cloud-to-cloud** event delivery (EventBridge-style buses, pub/sub topics).
+
+If the API exposes none of these, the section **MUST** still be retained in the submitted
+documentation and declared **N/A** — see [Appendix C](#appendix-c--conformance-checklist),
+*Declaration of missing or pending information*.
 
 **Requirements**
 
-- Every event/webhook **MUST** be documented using the OpenAPI `webhooks` (or `callbacks`) object, with its trigger, payload schema, and an example.
-- Subscription/registration and unsubscription **MUST** be documented (how endpoints are registered and which events are delivered).
-- **Delivery semantics MUST** be documented: retry policy, timeouts, ordering, and the delivery guarantee (at-least-once / at-most-once).
-- **Payload authenticity verification MUST** be documented (e.g., a signature header and how to validate it).
+- Every event **MUST** be documented with its **trigger**, **payload schema**, and an **example**, in the machine-readable specification appropriate to its transport — AsyncAPI `channels`/`messages` for WebSocket, MQTT, SSE and pub/sub; the OpenAPI `webhooks` (or `callbacks`) object for HTTP callbacks; the `Subscription` type in the SDL for GraphQL.
+- The **transport and connection lifecycle MUST** be documented: connection/handshake, how the stream is authenticated, keep-alive/heartbeat, reconnection behavior, and any backfill or replay available after a gap.
+- Subscription/registration and unsubscription **MUST** be documented (how endpoints or subscriptions are established, and which events each receives).
+- **Delivery semantics MUST** be documented: retry policy, timeouts, ordering guarantees, deduplication, and the delivery guarantee (at-least-once / at-most-once / exactly-once).
+- **Payload authenticity verification MUST** be documented for pushed payloads (e.g., a signature header and how to validate it).
 
-**Example — webhook definition**
+**Example — webhook definition (OpenAPI)**
 
 ```yaml
 webhooks:
@@ -525,7 +588,8 @@ The docs must be reachable, current, and machine-checkable.
 
 - Documentation **MUST** be publicly reachable, or reachable via a clearly documented access process.
 - Documentation **MUST** be kept in sync with the live API (regenerated from the spec on each change — Section 2).
-- The spec **SHOULD** pass an agreed linter (e.g., **Spectral**) with the OpenAV ruleset.
+- The spec **SHOULD** pass an agreed linter with the OpenAV ruleset — **Spectral** for OpenAPI and AsyncAPI, `graphql-schema-linter` (or equivalent) for SDL, `buf lint` for protobuf.
+- Examples **SHOULD** be validated against their declared schemas automatically in CI, so example drift is caught before publication (§6).
 - A **last-updated date** and the **spec version** **MUST** be visible in the published docs.
 
 ---
@@ -536,8 +600,8 @@ How a manufacturer proves compatibility.
 
 **Process**
 
-1. The manufacturer **MUST** submit a valid, machine-readable **OpenAPI 3.1.x** file (a URL to the hosted spec, or the file itself).
-2. OpenAV validates it against: the **OpenAPI 3.1 schema**, the **OpenAV linter ruleset**, and the **MUST checklist** ([Appendix C](#appendix-c--conformance-checklist)).
+1. The manufacturer **MUST** submit a valid, machine-readable specification for **every** architecture the API exposes (§2.1) — **OpenAPI 3.1.x**, **AsyncAPI**, **GraphQL SDL**, and/or `.proto` — as a URL to the hosted spec(s) or the file(s) themselves.
+2. OpenAV validates the submission against: the schema for each specification format, the **OpenAV linter ruleset**, and the **MUST checklist** ([Appendix C](#appendix-c--conformance-checklist)) — including the declaration rule for information that is unavailable or pending.
 3. Any gaps are returned to the manufacturer with the specific failing items.
 4. Once **all MUST items pass**, the API is recorded as **OpenAV-compatible**.
 
@@ -557,6 +621,9 @@ How a manufacturer proves compatibility.
 - **RFC 9457** — Problem Details for HTTP APIs (recommended error format).
 - **RFC 6749** — OAuth 2.0 (if used for authentication).
 - **OpenAPI Specification 3.1** — https://spec.openapis.org/oas/v3.1.0 · overview: https://en.wikipedia.org/wiki/OpenAPI_Specification
+- **AsyncAPI Specification** — https://www.asyncapi.com/docs/reference/specification/latest (event-driven, WebSocket, MQTT and pub/sub APIs).
+- **GraphQL Specification** (incl. Schema Definition Language) — https://spec.graphql.org/
+- **Protocol Buffers / gRPC** — https://protobuf.dev/ · https://grpc.io/docs/
 - **IETF `RateLimit` header fields** and **`Deprecation`/`Sunset`** headers — as referenced in Sections 9–10.
 
 ### Appendix B — Glossary
@@ -571,13 +638,43 @@ How a manufacturer proves compatibility.
 
 ### Appendix C — Conformance Checklist
 
-Every **MUST** in this document, as a checkable list. An API is OpenAV-compatible only when all are satisfied.
+Every **MUST** in this document, as a checkable list. Every section of this guideline is a
+mandatory component of the documentation **structure**; an API is OpenAV-compatible when each
+MUST item is either satisfied or explicitly declared under the rule below.
+
+**Declaration of missing or pending information**
+
+If a specific operational parameter, policy, or technical detail — explicit rate-limit
+thresholds, sunset timelines, WebSocket delivery semantics, and so on — is not available or not
+applicable at the time of submission, the documentation **MUST** retain the section and state
+explicitly that the information or capability is **unmapped, omitted, or pending definition**.
+A best-effort description is expected wherever one can be given; where it cannot, an explicit
+"not available at this time" is itself a conformant answer.
+
+Silently omitting a mandatory section is a **non-compliant submission**. The intent is that an
+integrator never has to hunt for this information in other sources, or discover its absence by
+trial and error.
+
+**Status summary**
+
+Submissions **SHOULD** include this table, with a status flag for each area:
+
+| Section / requirement | Compliance requirement | Status flag options |
+| :--- | :--- | :--- |
+| Machine-readable spec — OpenAPI / AsyncAPI / GraphQL SDL / `.proto` (§2.1) | Mandatory | Provided / Non-Compliant |
+| Application error catalog & status codes (§8) | Mandatory section | Documented / Declared Pending |
+| Rate limiting & quota semantics (§9) | Mandatory section | Defined / Declared Pending |
+| Versioning, deprecation, sunset & change notifications (§10) | Mandatory section | Defined / Declared Pending |
+| Async / WebSocket / event delivery semantics (§12) | Mandatory section | Defined / Declared Pending / N/A |
+| Security & transport constraints — minimum TLS, CORS (§13) | Mandatory section | Defined / Declared Pending |
+| Operational behavior — request timeouts, retry policy, idempotency (§14) | Mandatory section | Defined / Declared Pending |
 
 **Foundation**
-- [ ] Described with OpenAPI **3.1.x**.
+- [ ] Machine-readable spec provided for **every** architecture exposed — OpenAPI **3.1.x** (REST), AsyncAPI (WebSocket / event streams), GraphQL SDL, and/or `.proto` (§2.1).
 - [ ] Machine-readable spec is the single source of truth.
-- [ ] Spec validates against the 3.1 schema with zero errors.
-- [ ] Entire public surface documented (no hidden endpoints).
+- [ ] Spec validates against its format's schema with zero errors.
+- [ ] Entire public surface documented (no hidden endpoints, channels, or operations).
+- [ ] Endpoint documentation describes business purpose; field-level detail lives in the spec rather than duplicated prose (§2.2).
 
 **General info**
 - [ ] `info` has title, description, version, contact.
@@ -602,10 +699,11 @@ Every **MUST** in this document, as a checkable list. An API is OpenAV-compatibl
 - [ ] All parameters and request bodies documented with schemas/constraints.
 - [ ] All responses (success + error) documented with schema.
 - [ ] Request + response example per operation.
+- [ ] Every example validates against its declared schema.
 - [ ] Reusable schemas under `components`; fields document type/format/required/nullability; enums complete; units documented.
 
 **Errors**
-- [ ] Every status code documented per operation.
+- [ ] Every application-level status code documented per operation — all `4xx` and all `2xx` (generic gateway/load-balancer `5xx` not required).
 - [ ] Consistent error body documented (RFC 9457 recommended).
 - [ ] Application error-code catalog provided.
 - [ ] Failure modes documented per operation.
@@ -628,11 +726,12 @@ Every **MUST** in this document, as a checkable list. An API is OpenAV-compatibl
 - [ ] Filtering/sorting documented per collection.
 - [ ] Default and max page sizes documented.
 
-**Webhooks (if applicable)**
-- [ ] Every event documented with trigger, schema, example.
+**Asynchronous & event-driven interfaces** *(declare N/A if the API pushes no data)*
+- [ ] Every event documented with trigger, schema and example, in the specification for its transport.
+- [ ] Transport & connection lifecycle documented (handshake, stream auth, keep-alive, reconnect, replay).
 - [ ] Subscription/unsubscription documented.
-- [ ] Delivery semantics (retries/ordering/guarantee) documented.
-- [ ] Payload verification documented.
+- [ ] Delivery semantics (retries / ordering / deduplication / guarantee) documented.
+- [ ] Payload authenticity verification documented.
 
 **Security & operations**
 - [ ] TLS/HTTPS and min TLS version documented.
@@ -646,7 +745,7 @@ Every **MUST** in this document, as a checkable list. An API is OpenAV-compatibl
 - [ ] Last-updated date and spec version visible.
 
 **Submission**
-- [ ] Valid OpenAPI 3.1.x file submitted to OpenAV and kept current.
+- [ ] Valid specification file(s) for every exposed architecture submitted to OpenAV and kept current (§2.1).
 
 ### Appendix D — Starter `openapi.yaml` Skeleton
 
@@ -714,4 +813,4 @@ components:
 
 ---
 
-*OpenAV Technical Guidelines · v1.0 · Documentation requirements for OpenAV-compatible cloud APIs.*
+*OpenAV Technical Guidelines · v1.1 (draft) · Documentation requirements for OpenAV-compatible cloud APIs.*
