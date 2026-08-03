@@ -1,0 +1,533 @@
+openapi: 3.1.0
+info:
+  title: OpenAV Display Cloud API
+  version: 1.0.0
+  summary: Monitor and control OpenAV networked displays.
+  description: |
+    The OpenAV Display Cloud API lets third-party developers list, inspect, and
+    control **OpenAV networked displays** (a single device type), and receive
+    real-time status via webhooks.
+
+    This specification is the **single source of truth** for the API. All prose
+    documentation under `docs/` is derived from it.
+
+    - Transport: **HTTPS only** (TLS 1.2+).
+    - Media type: `application/json` (errors use `application/problem+json`, RFC 9457).
+    - Timestamps: **RFC 3339** UTC. JSON fields use `camelCase`.
+  termsOfService: https://developer.example-openav.com/terms
+  contact:
+    name: OpenAV Display Cloud — Developer Support
+    url: https://developer.example-openav.com/support
+    email: api@example-openav.com
+  license:
+    name: Proprietary — © OpenAV
+    url: https://developer.example-openav.com/license
+
+servers:
+  - url: https://api.example-openav.com/v1
+    description: Production
+  - url: https://sandbox.api.example-openav.com/v1
+    description: Sandbox (synthetic test displays, no real hardware)
+
+tags:
+  - name: Displays
+    description: Read and manage display devices.
+  - name: Commands
+    description: Send control commands to displays.
+  - name: System
+    description: Service health and metadata.
+
+security:
+  - oauth2: []
+
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      tags: [System]
+      summary: Service health check
+      description: Returns service health. Public — no authentication required.
+      security: []
+      responses:
+        '200':
+          description: Service is healthy.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Health' }
+              examples:
+                healthy:
+                  value: { status: ok, time: "2026-07-08T10:15:00Z" }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+
+  /displays:
+    get:
+      operationId: listDisplays
+      tags: [Displays]
+      summary: List displays
+      description: |
+        Returns a paginated list of displays owned by the caller's tenant.
+        Supports filtering by `status` and sorting by `name` or `createdAt`.
+      security:
+        - oauth2: [displays:read]
+      parameters:
+        - $ref: '#/components/parameters/PageCursor'
+        - $ref: '#/components/parameters/PageLimit'
+        - name: status
+          in: query
+          required: false
+          description: Filter by connectivity status.
+          schema: { type: string, enum: [online, offline] }
+        - name: sort
+          in: query
+          required: false
+          description: Sort field. Prefix with `-` for descending.
+          schema:
+            type: string
+            enum: [name, -name, createdAt, -createdAt]
+            default: name
+      responses:
+        '200':
+          description: A page of displays.
+          headers:
+            RateLimit-Limit:     { $ref: '#/components/headers/RateLimit-Limit' }
+            RateLimit-Remaining: { $ref: '#/components/headers/RateLimit-Remaining' }
+            RateLimit-Reset:     { $ref: '#/components/headers/RateLimit-Reset' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DisplayList' }
+              examples:
+                page:
+                  value:
+                    data:
+                      - id: "6f1c9e2a-0d3b-4f7a-9c11-2a4b6d8e0f12"
+                        name: "Lobby Display"
+                        status: online
+                        model: "OAV-55X"
+                        createdAt: "2026-01-04T09:00:00Z"
+                    meta: { nextCursor: null, total: 1 }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+
+  /displays/{displayId}:
+    parameters:
+      - $ref: '#/components/parameters/DisplayId'
+    get:
+      operationId: getDisplay
+      tags: [Displays]
+      summary: Get a display
+      description: Returns a single display by ID.
+      security:
+        - oauth2: [displays:read]
+      responses:
+        '200':
+          description: The display.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Display' }
+              examples:
+                display:
+                  value:
+                    id: "6f1c9e2a-0d3b-4f7a-9c11-2a4b6d8e0f12"
+                    name: "Lobby Display"
+                    status: online
+                    model: "OAV-55X"
+                    createdAt: "2026-01-04T09:00:00Z"
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+    patch:
+      operationId: updateDisplay
+      tags: [Displays]
+      summary: Update a display
+      description: Updates mutable display attributes (currently `name` only).
+      security:
+        - oauth2: [displays:control]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DisplayUpdate' }
+            examples:
+              rename:
+                value: { name: "Main Lobby Display" }
+      responses:
+        '200':
+          description: The updated display.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Display' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+
+  /displays/{displayId}/status:
+    parameters:
+      - $ref: '#/components/parameters/DisplayId'
+    get:
+      operationId: getDisplayStatus
+      tags: [Displays]
+      summary: Get display status & telemetry
+      description: Returns current power state, active input, and panel temperature.
+      security:
+        - oauth2: [displays:read]
+      responses:
+        '200':
+          description: Current status.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DisplayStatus' }
+              examples:
+                status:
+                  value: { power: on, input: hdmi1, temperatureC: 41.5 }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+
+  /displays/{displayId}/commands:
+    parameters:
+      - $ref: '#/components/parameters/DisplayId'
+    post:
+      operationId: sendDisplayCommand
+      tags: [Commands]
+      summary: Send a control command
+      description: |
+        Queues a control command for the display and returns `202 Accepted`.
+        Commands are asynchronous; observe completion via the
+        `display.status_changed` webhook.
+
+        Pass an `Idempotency-Key` to make retries safe: repeating a request with
+        the same key returns the original result instead of queuing a duplicate.
+      security:
+        - oauth2: [displays:control]
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Command' }
+            examples:
+              powerOn:
+                summary: Power on
+                value: { type: power, value: "on" }
+              setInput:
+                summary: Switch input to HDMI 2
+                value: { type: input, value: "hdmi2" }
+      responses:
+        '202':
+          description: Command accepted for asynchronous processing.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CommandAccepted' }
+              examples:
+                accepted:
+                  value:
+                    commandId: "b2d4…"
+                    displayId: "6f1c9e2a-0d3b-4f7a-9c11-2a4b6d8e0f12"
+                    status: queued
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
+
+webhooks:
+  display.status_changed:
+    post:
+      operationId: onDisplayStatusChanged
+      summary: Display status or telemetry changed
+      description: |
+        Delivered when a display's power, input, or temperature changes, or when a
+        queued command completes. Verify the `OpenAV-Signature` header before trusting
+        the payload (see docs/09-webhooks.md). Return `2xx` within 5s or delivery is
+        retried with exponential backoff for up to 24h (at-least-once delivery).
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DisplayStatusChangedEvent' }
+            examples:
+              event:
+                value:
+                  id: "evt_9a…"
+                  type: display.status_changed
+                  createdAt: "2026-07-08T10:16:00Z"
+                  data:
+                    displayId: "6f1c9e2a-0d3b-4f7a-9c11-2a4b6d8e0f12"
+                    status: { power: on, input: hdmi2, temperatureC: 42.0 }
+      responses:
+        '200':
+          description: Event acknowledged.
+
+  display.online:
+    post:
+      operationId: onDisplayOnline
+      summary: Display came online
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DisplayConnectivityEvent' }
+      responses:
+        '200': { description: Event acknowledged. }
+
+  display.offline:
+    post:
+      operationId: onDisplayOffline
+      summary: Display went offline
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DisplayConnectivityEvent' }
+      responses:
+        '200': { description: Event acknowledged. }
+
+components:
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      description: |
+        OAuth 2.0 client-credentials (machine-to-machine). Obtain a client from the
+        developer portal, then exchange it at the token endpoint for a bearer token
+        (TTL 3600s). Send `Authorization: Bearer <token>` on every request.
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.example-openav.com/oauth2/token
+          refreshUrl: https://auth.example-openav.com/oauth2/token
+          scopes:
+            displays:read: Read displays and their telemetry.
+            displays:control: Send commands and modify displays.
+
+  parameters:
+    DisplayId:
+      name: displayId
+      in: path
+      required: true
+      description: The display's unique identifier.
+      schema: { type: string, format: uuid }
+    PageCursor:
+      name: cursor
+      in: query
+      required: false
+      description: Opaque cursor from the previous page's `meta.nextCursor`.
+      schema: { type: string }
+    PageLimit:
+      name: limit
+      in: query
+      required: false
+      description: Items per page. Default 25, maximum 100.
+      schema: { type: integer, minimum: 1, maximum: 100, default: 25 }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      description: Client-generated UUID that makes a retried command safe (retained 24h).
+      schema: { type: string, format: uuid }
+
+  headers:
+    RateLimit-Limit:
+      description: Requests allowed in the current window.
+      schema: { type: integer }
+    RateLimit-Remaining:
+      description: Requests remaining in the current window.
+      schema: { type: integer }
+    RateLimit-Reset:
+      description: Seconds until the current window resets.
+      schema: { type: integer }
+    Retry-After:
+      description: Seconds to wait before retrying after a 429 or 503.
+      schema: { type: integer }
+
+  schemas:
+    Health:
+      type: object
+      required: [status, time]
+      properties:
+        status: { type: string, enum: [ok, degraded], description: Overall service health. }
+        time:   { type: string, format: date-time, description: Server time (RFC 3339). }
+
+    Display:
+      type: object
+      required: [id, name, status, createdAt]
+      properties:
+        id:        { type: string, format: uuid, description: Unique display ID. }
+        name:      { type: string, maxLength: 120, description: Human-friendly display name. }
+        status:    { type: string, enum: [online, offline], description: Connectivity status. }
+        model:     { type: [string, "null"], description: Hardware model identifier, if known. }
+        createdAt: { type: string, format: date-time, description: When the display was registered (RFC 3339). }
+
+    DisplayUpdate:
+      type: object
+      minProperties: 1
+      properties:
+        name: { type: string, minLength: 1, maxLength: 120, description: New display name. }
+
+    DisplayStatus:
+      type: object
+      required: [power, temperatureC]
+      properties:
+        power:        { type: string, enum: [on, off, standby], description: Current power state. }
+        input:        { type: [string, "null"], enum: [hdmi1, hdmi2, usb-c, null], description: Active input source, or null if off. }
+        temperatureC: { type: number, description: Panel temperature in degrees Celsius (°C). }
+
+    Command:
+      type: object
+      required: [type, value]
+      description: A control command. Allowed `value`s depend on `type`.
+      properties:
+        type:  { type: string, enum: [power, input], description: Command category. }
+        value: { type: string, description: "For `power`: on|off|standby. For `input`: hdmi1|hdmi2|usb-c." }
+
+    CommandAccepted:
+      type: object
+      required: [commandId, displayId, status]
+      properties:
+        commandId: { type: string, description: Identifier for tracking this command. }
+        displayId: { type: string, format: uuid }
+        status:    { type: string, enum: [queued], description: Initial command status. }
+
+    PageMeta:
+      type: object
+      required: [nextCursor]
+      properties:
+        nextCursor: { type: [string, "null"], description: Cursor for the next page, or null on the last page. }
+        total:      { type: [integer, "null"], description: Total matching items, if known. }
+
+    DisplayList:
+      type: object
+      required: [data, meta]
+      properties:
+        data: { type: array, items: { $ref: '#/components/schemas/Display' } }
+        meta: { $ref: '#/components/schemas/PageMeta' }
+
+    DisplayStatusChangedEvent:
+      type: object
+      required: [id, type, createdAt, data]
+      properties:
+        id:        { type: string, description: Unique event ID (for de-duplication). }
+        type:      { type: string, enum: [display.status_changed] }
+        createdAt: { type: string, format: date-time }
+        data:
+          type: object
+          required: [displayId, status]
+          properties:
+            displayId: { type: string, format: uuid }
+            status:    { $ref: '#/components/schemas/DisplayStatus' }
+
+    DisplayConnectivityEvent:
+      type: object
+      required: [id, type, createdAt, data]
+      properties:
+        id:        { type: string }
+        type:      { type: string, enum: [display.online, display.offline] }
+        createdAt: { type: string, format: date-time }
+        data:
+          type: object
+          required: [displayId]
+          properties:
+            displayId: { type: string, format: uuid }
+
+    Problem:
+      type: object
+      description: Error body per RFC 9457 (Problem Details for HTTP APIs).
+      required: [type, title, status]
+      properties:
+        type:     { type: string, format: uri, description: URI identifying the problem type. }
+        title:    { type: string, description: Short, human-readable summary of the problem type. }
+        status:   { type: integer, description: HTTP status code. }
+        detail:   { type: string, description: Human-readable explanation specific to this occurrence. }
+        instance: { type: string, description: URI/path of this specific occurrence. }
+        code:     { type: string, description: Stable application error code (see docs/05-errors.md). }
+
+  responses:
+    BadRequest:
+      description: Malformed request (invalid JSON or parameter).
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          examples:
+            badRequest:
+              value: { type: "https://developer.example-openav.com/errors/bad-request", title: "Bad request", status: 400, code: "BAD_REQUEST" }
+    Unauthorized:
+      description: Missing, expired, or invalid credentials.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          examples:
+            unauthorized:
+              value: { type: "https://developer.example-openav.com/errors/unauthorized", title: "Not authenticated", status: 401, code: "UNAUTHORIZED" }
+    Forbidden:
+      description: Authenticated but the token lacks the required scope or resource ownership.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          examples:
+            forbidden:
+              value: { type: "https://developer.example-openav.com/errors/forbidden", title: "Insufficient permission", status: 403, code: "FORBIDDEN" }
+    NotFound:
+      description: The referenced resource does not exist.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          examples:
+            notFound:
+              value: { type: "https://developer.example-openav.com/errors/not-found", title: "Not found", status: 404, code: "NOT_FOUND" }
+    Conflict:
+      description: The request conflicts with the current state (e.g., display offline).
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          examples:
+            offline:
+              value: { type: "https://developer.example-openav.com/errors/display-offline", title: "Display is offline", status: 409, code: "DISPLAY_OFFLINE", detail: "The display cannot accept commands while offline." }
+    Unprocessable:
+      description: Well-formed request but semantically invalid values.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          examples:
+            badInput:
+              value: { type: "https://developer.example-openav.com/errors/invalid-input-source", title: "Invalid input source", status: 422, code: "INVALID_INPUT_SOURCE", detail: "Input 'hdmi3' is not supported by model OAV-55X." }
+    TooManyRequests:
+      description: Rate limit or quota exceeded.
+      headers:
+        Retry-After:         { $ref: '#/components/headers/Retry-After' }
+        RateLimit-Limit:     { $ref: '#/components/headers/RateLimit-Limit' }
+        RateLimit-Remaining: { $ref: '#/components/headers/RateLimit-Remaining' }
+        RateLimit-Reset:     { $ref: '#/components/headers/RateLimit-Reset' }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          examples:
+            rateLimited:
+              value: { type: "https://developer.example-openav.com/errors/rate-limited", title: "Rate limit exceeded", status: 429, code: "RATE_LIMITED" }
+    InternalError:
+      description: Unexpected server error.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          examples:
+            internal:
+              value: { type: "https://developer.example-openav.com/errors/internal", title: "Internal server error", status: 500, code: "INTERNAL_ERROR" }
+    ServiceUnavailable:
+      description: Service temporarily unavailable.
+      headers:
+        Retry-After: { $ref: '#/components/headers/Retry-After' }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          examples:
+            unavailable:
+              value: { type: "https://developer.example-openav.com/errors/unavailable", title: "Service unavailable", status: 503, code: "SERVICE_UNAVAILABLE" }
