@@ -8,6 +8,7 @@ Limits let you design a well-behaved integration before you hit a wall.
 |---|---|---|---|
 | API requests | 600 | 60 s (rolling) | per access token |
 | Commands (`POST .../commands`) | 60 | 60 s | per display |
+| Health checks (`GET /health`, unauthenticated) | 2 | 60 s | per source IP |
 
 ## How limits are communicated
 

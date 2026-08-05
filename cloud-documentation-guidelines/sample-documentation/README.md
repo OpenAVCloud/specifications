@@ -5,7 +5,7 @@
 > networked **Display**. It is intentionally small in functionality but exercises
 > **every** requirement in the [OpenAV Technical Guidelines](../openav-technical-guidelines.md).
 >
-> **Spec version:** 1.0.0 · **Last updated:** 2026-07-08
+> **Spec version:** 1.0.0 · **Last updated:** 2026-08-05
 
 ## What this API does
 
@@ -15,7 +15,7 @@ real-time changes via webhooks.
 
 - **Base URL (prod):** `https://api.example-openav.com/v1`
 - **Base URL (sandbox):** `https://sandbox.api.example-openav.com/v1`
-- **Transport:** HTTPS only (TLS 1.2+) · **Media type:** `application/json` · **Errors:** `application/problem+json` (RFC 9457)
+- **Transport:** HTTPS only (TLS 1.2+) · **Media type:** `application/json` (UTF-8) · **Errors:** `application/problem+json` (RFC 9457)
 - **Machine-readable contract (source of truth):** [`openapi.yaml`](./openapi.yaml)
 
 ## Documentation index

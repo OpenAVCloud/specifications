@@ -57,6 +57,30 @@ curl -s -X POST \
 Commands are asynchronous — watch for the `display.status_changed`
 [webhook](./09-webhooks.md) to confirm completion.
 
+## More example requests
+
+Every remaining operation, ready to copy-paste (response examples live in
+[`../openapi.yaml`](../openapi.yaml)):
+
+```bash
+# Get one display
+curl -s https://sandbox.api.example-openav.com/v1/displays/6f1c9e2a-0d3b-4f7a-9c11-2a4b6d8e0f12 \
+  -H "Authorization: Bearer $ACCESS_TOKEN"
+
+# Read its status & telemetry
+curl -s https://sandbox.api.example-openav.com/v1/displays/6f1c9e2a-0d3b-4f7a-9c11-2a4b6d8e0f12/status \
+  -H "Authorization: Bearer $ACCESS_TOKEN"
+
+# Rename it
+curl -s -X PATCH https://sandbox.api.example-openav.com/v1/displays/6f1c9e2a-0d3b-4f7a-9c11-2a4b6d8e0f12 \
+  -H "Authorization: Bearer $ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{ "name": "Main Lobby Display" }'
+
+# Service health (public, no auth)
+curl -s https://sandbox.api.example-openav.com/v1/health
+```
+
 ## Next
 
 - [Authentication](./02-authentication.md) · [Authorization](./03-authorization.md)

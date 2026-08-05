@@ -2,7 +2,7 @@
 
 > **Status:** 1.1 · Draft Update (Working Group Proposal)
 > **Applies to:** Any manufacturer offering a cloud API for integration with OpenAV.
-> **Worked example:** A complete reference that satisfies every requirement below lives in [`sample-openav-cloud/`](./sample-openav-cloud/).
+> **Worked example:** A complete reference that satisfies every requirement below lives in [`sample-documentation/`](./sample-documentation/).
 
 > ### ⚠️ Scope: documentation only — not implementation
 > This document defines **HOW TO DOCUMENT** a cloud API. It does **NOT** define how to
@@ -750,7 +750,7 @@ Submissions **SHOULD** include this table, with a status flag for each area:
 ### Appendix D — Starter `openapi.yaml` Skeleton
 
 A minimal, valid starting point. A complete worked example is in
-[`sample-openav-cloud/openapi.yaml`](./sample-openav-cloud/openapi.yaml).
+[`sample-documentation/openapi.yaml`](./sample-documentation/openapi.yaml).
 
 ```yaml
 openapi: 3.1.0
