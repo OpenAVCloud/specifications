@@ -13,6 +13,7 @@ info:
 
     - Transport: **HTTPS only** (TLS 1.2+).
     - Media type: `application/json` (errors use `application/problem+json`, RFC 9457).
+    - Character encoding: **UTF-8** for all request and response bodies.
     - Timestamps: **RFC 3339** UTC. JSON fields use `camelCase`.
   termsOfService: https://developer.example-openav.com/terms
   contact:
@@ -36,6 +37,8 @@ tags:
     description: Send control commands to displays.
   - name: System
     description: Service health and metadata.
+  - name: Events
+    description: Webhook events delivered to registered endpoints.
 
 security:
   - oauth2: []
@@ -57,6 +60,7 @@ paths:
               examples:
                 healthy:
                   value: { status: ok, time: "2026-07-08T10:15:00Z" }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
         '503': { $ref: '#/components/responses/ServiceUnavailable' }
 
   /displays:
@@ -161,6 +165,14 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Display' }
+              examples:
+                renamed:
+                  value:
+                    id: "6f1c9e2a-0d3b-4f7a-9c11-2a4b6d8e0f12"
+                    name: "Main Lobby Display"
+                    status: online
+                    model: "OAV-55X"
+                    createdAt: "2026-01-04T09:00:00Z"
         '400': { $ref: '#/components/responses/BadRequest' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
@@ -187,7 +199,7 @@ paths:
               schema: { $ref: '#/components/schemas/DisplayStatus' }
               examples:
                 status:
-                  value: { power: on, input: hdmi1, temperatureC: 41.5 }
+                  value: { power: "on", input: hdmi1, temperatureC: 41.5 }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
@@ -249,6 +261,7 @@ webhooks:
   display.status_changed:
     post:
       operationId: onDisplayStatusChanged
+      tags: [Events]
       summary: Display status or telemetry changed
       description: |
         Delivered when a display's power, input, or temperature changes, or when a
@@ -267,7 +280,7 @@ webhooks:
                   createdAt: "2026-07-08T10:16:00Z"
                   data:
                     displayId: "6f1c9e2a-0d3b-4f7a-9c11-2a4b6d8e0f12"
-                    status: { power: on, input: hdmi2, temperatureC: 42.0 }
+                    status: { power: "on", input: hdmi2, temperatureC: 42.0 }
       responses:
         '200':
           description: Event acknowledged.
@@ -275,22 +288,50 @@ webhooks:
   display.online:
     post:
       operationId: onDisplayOnline
+      tags: [Events]
       summary: Display came online
+      description: |
+        Delivered when a display establishes connectivity to the cloud. Verify the
+        `OpenAV-Signature` header before trusting the payload (see docs/09-webhooks.md).
+        Return `2xx` within 5s or delivery is retried with exponential backoff for up
+        to 24h (at-least-once delivery).
       requestBody:
         content:
           application/json:
             schema: { $ref: '#/components/schemas/DisplayConnectivityEvent' }
+            examples:
+              online:
+                value:
+                  id: "evt_4b…"
+                  type: display.online
+                  createdAt: "2026-07-08T10:14:00Z"
+                  data:
+                    displayId: "6f1c9e2a-0d3b-4f7a-9c11-2a4b6d8e0f12"
       responses:
         '200': { description: Event acknowledged. }
 
   display.offline:
     post:
       operationId: onDisplayOffline
+      tags: [Events]
       summary: Display went offline
+      description: |
+        Delivered when a display loses connectivity to the cloud. Verify the
+        `OpenAV-Signature` header before trusting the payload (see docs/09-webhooks.md).
+        Return `2xx` within 5s or delivery is retried with exponential backoff for up
+        to 24h (at-least-once delivery).
       requestBody:
         content:
           application/json:
             schema: { $ref: '#/components/schemas/DisplayConnectivityEvent' }
+            examples:
+              offline:
+                value:
+                  id: "evt_5c…"
+                  type: display.offline
+                  createdAt: "2026-07-08T10:30:00Z"
+                  data:
+                    displayId: "6f1c9e2a-0d3b-4f7a-9c11-2a4b6d8e0f12"
       responses:
         '200': { description: Event acknowledged. }
 
@@ -365,7 +406,7 @@ components:
         id:        { type: string, format: uuid, description: Unique display ID. }
         name:      { type: string, maxLength: 120, description: Human-friendly display name. }
         status:    { type: string, enum: [online, offline], description: Connectivity status. }
-        model:     { type: [string, "null"], description: Hardware model identifier, if known. }
+        model:     { type: [string, "null"], description: "Hardware model identifier, if known." }
         createdAt: { type: string, format: date-time, description: When the display was registered (RFC 3339). }
 
     DisplayUpdate:
@@ -378,8 +419,8 @@ components:
       type: object
       required: [power, temperatureC]
       properties:
-        power:        { type: string, enum: [on, off, standby], description: Current power state. }
-        input:        { type: [string, "null"], enum: [hdmi1, hdmi2, usb-c, null], description: Active input source, or null if off. }
+        power:        { type: string, enum: ["on", "off", standby], description: Current power state. }
+        input:        { type: [string, "null"], enum: [hdmi1, hdmi2, usb-c, null], description: "Active input source, or null if off." }
         temperatureC: { type: number, description: Panel temperature in degrees Celsius (°C). }
 
     Command:
@@ -402,8 +443,8 @@ components:
       type: object
       required: [nextCursor]
       properties:
-        nextCursor: { type: [string, "null"], description: Cursor for the next page, or null on the last page. }
-        total:      { type: [integer, "null"], description: Total matching items, if known. }
+        nextCursor: { type: [string, "null"], description: "Cursor for the next page, or null on the last page." }
+        total:      { type: [integer, "null"], description: "Total matching items, if known." }
 
     DisplayList:
       type: object
@@ -445,7 +486,7 @@ components:
       required: [type, title, status]
       properties:
         type:     { type: string, format: uri, description: URI identifying the problem type. }
-        title:    { type: string, description: Short, human-readable summary of the problem type. }
+        title:    { type: string, description: "Short, human-readable summary of the problem type." }
         status:   { type: integer, description: HTTP status code. }
         detail:   { type: string, description: Human-readable explanation specific to this occurrence. }
         instance: { type: string, description: URI/path of this specific occurrence. }

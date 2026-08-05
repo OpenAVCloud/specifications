@@ -23,5 +23,20 @@ satisfies it — demonstrating full coverage.
 | 16 | Reachable, in-sync, lint-clean, last-updated + version visible | [README](../README.md) (version + date); docs generated from spec |
 | 17 | Submit valid OpenAPI 3.1.x to OpenAV | [`openapi.yaml`](../openapi.yaml) is the submittable artifact |
 
+## Status summary
+
+Per Appendix C of the guideline, submissions should include this table with a status
+flag for each area:
+
+| Section / requirement | Compliance requirement | Status |
+| :--- | :--- | :--- |
+| Machine-readable spec — OpenAPI 3.1.x (§2.1) | Mandatory | Provided |
+| Application error catalog & status codes (§8) | Mandatory section | Documented |
+| Rate limiting & quota semantics (§9) | Mandatory section | Defined |
+| Versioning, deprecation, sunset & change notifications (§10) | Mandatory section | Defined |
+| Async / WebSocket / event delivery semantics (§12) | Mandatory section | Defined |
+| Security & transport constraints — minimum TLS, CORS (§13) | Mandatory section | Defined |
+| Operational behavior — request timeouts, retry policy, idempotency (§14) | Mandatory section | Defined |
+
 Every **MUST** in [Appendix C](../../openav-technical-guidelines.md#appendix-c--conformance-checklist)
 of the guideline is exercised by this example.
