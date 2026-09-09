@@ -1,0 +1,2532 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "OpenAV Example REST API",
+    "version": "1.0",
+    "description": "OpenAV initiative example using a redacted version of Shure's REST APIs for demonstration purposes.",
+    "contact": {
+      "name": "Shure Incorporated",
+      "url": "https://www.shure.com/en-US",
+      "email": "support@shure.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://system-api.devices.cloud.shure.com",
+      "description": "openav-cloud-example"
+    }
+  ],
+  "security": [
+    {
+      "OAuth2ClientCredentials": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Devices",
+      "description": "Overview of your devices"
+    },
+    {
+      "name": "AudioChannels",
+      "description": "Overview of a device's audio channels"
+    },
+    {
+      "name": "AudioChannelGain",
+      "description": "Monitor and control the gain (loudness) of an audio channel"
+    },
+    {
+      "name": "AudioChannelName",
+      "description": "Name of an audio channel"
+    },
+    {
+      "name": "DeviceName",
+      "description": "Get a device's name, or rename it"
+    }
+  ],
+  "paths": {
+    "/v1/devices": {
+      "get": {
+        "summary": "Get All Devices",
+        "responses": {
+          "200": {
+            "description": "The specified devices' properties were returned successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListDevicesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenResponse"
+          },
+          "405": {
+            "$ref": "#/components/responses/NotAllowedResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsResponse"
+          }
+        },
+        "operationId": "devices",
+        "description": "Retrieve the list of identifying information for discovered devices. \n\nThe number and set of devices returned can be filtered by using the query parameters. It is suggested to limit the use of the query parameters to the following combinations:\n- `first`\n- `first` & `after`\n- `last`\n- `last` & `before`\n\nIf more than 1,000 devices are discovered, clients must send successive requests to obtain all devices.",
+        "tags": [
+          "Devices"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/first"
+          },
+          {
+            "$ref": "#/components/parameters/last"
+          },
+          {
+            "$ref": "#/components/parameters/before"
+          },
+          {
+            "$ref": "#/components/parameters/after"
+          }
+        ],
+        "x-internal": false
+      }
+    },
+    "/v1/devices/{deviceId}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/deviceId"
+        }
+      ],
+      "get": {
+        "summary": "Get Device by ID",
+        "responses": {
+          "200": {
+            "description": "The device properties were returned successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/OnlineDevice"
+                    },
+                    {
+                      "$ref": "#/components/schemas/DiscoveredDevice"
+                    }
+                  ]
+                }
+              }
+            },
+            "links": {}
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          },
+          "405": {
+            "$ref": "#/components/responses/NotAllowedResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsResponse"
+          }
+        },
+        "operationId": "device",
+        "description": "Retrieve properties of a shure device specified by `deviceId`",
+        "tags": [
+          "Devices"
+        ]
+      }
+    },
+    "/v1/devices/{deviceId}/capabilities": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/deviceId"
+        }
+      ],
+      "get": {
+        "summary": "Get Device Capabilities",
+        "responses": {
+          "200": {
+            "description": "The device capabilities were returned successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceCapabilities"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          },
+          "405": {
+            "$ref": "#/components/responses/NotAllowedResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsResponse"
+          }
+        },
+        "operationId": "deviceCapabilities",
+        "description": "Retrieve all the capabilities supported by a Shure device specified by `deviceId`",
+        "tags": [
+          "Devices"
+        ]
+      }
+    },
+    "/v1/devices/{deviceId}/audio-channels-v2": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/deviceId"
+        }
+      ],
+      "get": {
+        "summary": "Get Audio Channel Properties v2",
+        "responses": {
+          "200": {
+            "description": "The audio channel properties were returned successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AudioChannelListV2"
+                }
+              }
+            },
+            "links": {}
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          },
+          "405": {
+            "$ref": "#/components/responses/NotAllowedResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsResponse"
+          }
+        },
+        "operationId": "deviceAudioChannelsV2",
+        "description": "Retrieve the list of identifying information for audio channels of the device specified by `deviceId`.",
+        "tags": [
+          "AudioChannels"
+        ],
+        "x-stoplight": {
+          "id": "h5gueljrjfap6"
+        }
+      }
+    },
+    "/v1/devices/{deviceId}/audio-channels/{audioChannelId}/capabilities": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/deviceId"
+        },
+        {
+          "$ref": "#/components/parameters/audioChannelId"
+        }
+      ],
+      "get": {
+        "summary": "Get Audio Channel Capabilities",
+        "responses": {
+          "200": {
+            "description": "The audio channel capabilities were returned successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AudioChannelCapabilities"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          },
+          "405": {
+            "$ref": "#/components/responses/NotAllowedResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsResponse"
+          }
+        },
+        "operationId": "audioChannelCapabilities",
+        "description": "Retrieve all the capabilities supported by an audio channel specified by `audioChannelId` of a Shure device specified by `deviceId`",
+        "tags": [
+          "AudioChannels"
+        ],
+        "x-stoplight": {
+          "id": "rcb019dpduqae"
+        }
+      }
+    },
+    "/v1/devices/{deviceId}/audio-channels/{audioChannelId}/name": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/deviceId"
+        },
+        {
+          "$ref": "#/components/parameters/audioChannelId"
+        }
+      ],
+      "get": {
+        "summary": "Get Audio Channel Name",
+        "tags": [
+          "AudioChannelName"
+        ],
+        "responses": {
+          "200": {
+            "description": "The device properties were returned successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AudioChannelNameResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          },
+          "405": {
+            "$ref": "#/components/responses/NotAllowedResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsResponse"
+          }
+        },
+        "operationId": "audioChannelName",
+        "description": "Retrieve the name for the audio channel specified by `audioChannelId` on the device specified by `deviceId`."
+      },
+      "patch": {
+        "summary": "Update Audio Channel Name",
+        "operationId": "updateAudioChannelName",
+        "responses": {
+          "204": {
+            "description": "The device was updated successfully."
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          },
+          "405": {
+            "$ref": "#/components/responses/NotAllowedResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsResponse"
+          }
+        },
+        "description": "Update the name for the audio channel specified by `audioChannelId` on the device specified by `deviceId`.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Content-Type"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AudioChannelName"
+              }
+            }
+          }
+        },
+        "tags": [
+          "AudioChannelName"
+        ]
+      }
+    },
+    "/v1/devices/{deviceId}/audio-channels/{audioChannelId}/name/description": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/deviceId"
+        },
+        {
+          "$ref": "#/components/parameters/audioChannelId"
+        }
+      ],
+      "get": {
+        "summary": "Get Audio Channel Name Description",
+        "tags": [
+          "AudioChannelName"
+        ],
+        "responses": {
+          "200": {
+            "description": "Audio channel name description retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AudioChannelNameDescription"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          },
+          "405": {
+            "$ref": "#/components/responses/NotAllowedResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsResponse"
+          }
+        },
+        "operationId": "audioChannelNameDescription",
+        "description": "Get the audio channel name description for the audio channel specified by `audioChannelId` on the device specified by `deviceId`",
+        "x-stoplight": {
+          "id": "ey8vylgmie5ik"
+        }
+      }
+    },
+    "/v1/devices/{deviceId}/audio-channels/{audioChannelId}/name/subscription/{transportId}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/deviceId"
+        },
+        {
+          "$ref": "#/components/parameters/audioChannelId"
+        },
+        {
+          "$ref": "#/components/parameters/transportId"
+        }
+      ],
+      "post": {
+        "summary": "Subscribe: Audio Channel Name",
+        "tags": [
+          "AudioChannelName"
+        ],
+        "responses": {
+          "201": {
+            "description": "Subscription created successfully."
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          },
+          "405": {
+            "$ref": "#/components/responses/NotAllowedResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsResponse"
+          }
+        },
+        "operationId": "subscribeAudioChannelName",
+        "description": "Subscribe to changes to the name for the audio channel specified by `audioChannelId` on the device specified by `deviceId`.",
+        "callbacks": {
+          "onEvent": {
+            "/ws": {
+              "post": {
+                "requestBody": {
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/AudioChannelNameEvent"
+                      }
+                    }
+                  }
+                },
+                "responses": {
+                  "204": {
+                    "description": "OK"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Unsubscribe: Audio Channel Name",
+        "operationId": "unsubscribeAudioChannelName",
+        "responses": {
+          "204": {
+            "description": "Subscription deleted successfully."
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          },
+          "405": {
+            "$ref": "#/components/responses/NotAllowedResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsResponse"
+          }
+        },
+        "description": "Unsubscribe from changes to the name for the audio channel specified by `audioChannelId` on the device specified by `deviceId`.",
+        "tags": [
+          "AudioChannelName"
+        ]
+      }
+    },
+    "/v1/devices/{deviceId}/name": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/deviceId"
+        }
+      ],
+      "get": {
+        "summary": "Get Device Name",
+        "operationId": "deviceName",
+        "responses": {
+          "200": {
+            "description": "Device details retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceNameResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          },
+          "405": {
+            "$ref": "#/components/responses/NotAllowedResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsResponse"
+          }
+        },
+        "description": "Get name of the device specified by `deviceId`.",
+        "tags": [
+          "DeviceName"
+        ]
+      },
+      "patch": {
+        "summary": "Update Device Name",
+        "operationId": "updateDeviceName",
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          },
+          "405": {
+            "$ref": "#/components/responses/NotAllowedResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsResponse"
+          }
+        },
+        "description": "Update name of the device specified by `deviceId`",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Content-Type"
+          }
+        ],
+        "tags": [
+          "DeviceName"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeviceName"
+              }
+            }
+          },
+          "description": ""
+        }
+      }
+    },
+    "/v1/devices/{deviceId}/name/description": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/deviceId"
+        }
+      ],
+      "get": {
+        "x-stoplight": {
+          "id": "2pjsx1t7artba"
+        },
+        "summary": "Get Device Name Description",
+        "tags": [
+          "DeviceName"
+        ],
+        "responses": {
+          "200": {
+            "description": "Device name description retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceNameDescription"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          },
+          "405": {
+            "$ref": "#/components/responses/NotAllowedResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsResponse"
+          }
+        },
+        "operationId": "deviceNameDescription",
+        "description": "Get the device name description for the device specified by `deviceId`"
+      }
+    },
+    "/v1/devices/{deviceId}/name/subscription/{transportId}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/deviceId"
+        },
+        {
+          "$ref": "#/components/parameters/transportId"
+        }
+      ],
+      "post": {
+        "summary": "Subscribe: Device Name",
+        "operationId": "subscribeDeviceName",
+        "responses": {
+          "201": {
+            "description": "Subscription created successfully."
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          },
+          "405": {
+            "$ref": "#/components/responses/NotAllowedResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsResponse"
+          }
+        },
+        "description": "Subscribe to the name of the device specified by `deviceId`",
+        "callbacks": {
+          "onEvent": {
+            "/ws": {
+              "post": {
+                "requestBody": {
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/DeviceNameEvent"
+                      }
+                    }
+                  }
+                },
+                "responses": {
+                  "204": {
+                    "description": "OK"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "DeviceName"
+        ]
+      },
+      "delete": {
+        "summary": "Unsubscribe: Device Name",
+        "operationId": "unsubscribeDeviceName",
+        "responses": {
+          "204": {
+            "description": "Subscription deleted successfully."
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          },
+          "405": {
+            "$ref": "#/components/responses/NotAllowedResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsResponse"
+          }
+        },
+        "description": "Unsubscribe from the name of the device specified by `deviceId`",
+        "tags": [
+          "DeviceName"
+        ]
+      }
+    },
+    "/v1/devices/{deviceId}/audio-channels/{audioChannelId}/gain": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/deviceId"
+        },
+        {
+          "$ref": "#/components/parameters/audioChannelId"
+        }
+      ],
+      "get": {
+        "summary": "Get Audio Channel Gain",
+        "tags": [
+          "AudioChannelGain"
+        ],
+        "responses": {
+          "200": {
+            "description": "Device details retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AudioChannelGainResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          },
+          "405": {
+            "$ref": "#/components/responses/NotAllowedResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsResponse"
+          }
+        },
+        "operationId": "audioChannelGain",
+        "description": "Retrieve the audio gain setting for the audio channel specified by `audioChannelId` on the device specified by `deviceId`",
+        "x-stoplight": {
+          "id": "89ezgwaz5nnkb"
+        }
+      },
+      "patch": {
+        "summary": "Update Audio Channel Gain",
+        "operationId": "updateAudioChannelGain",
+        "responses": {
+          "204": {
+            "description": "The device was updated successfully."
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          },
+          "405": {
+            "$ref": "#/components/responses/NotAllowedResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsResponse"
+          }
+        },
+        "description": "Update the audio gain setting for the audio channel specified by `audioChannelId` on the device specified by `deviceId`",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Content-Type"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AudioChannelGain"
+              }
+            }
+          },
+          "description": ""
+        },
+        "tags": [
+          "AudioChannelGain"
+        ],
+        "x-stoplight": {
+          "id": "2asw2l6s7vqpv"
+        }
+      }
+    },
+    "/v1/devices/{deviceId}/audio-channels/{audioChannelId}/gain/description": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/deviceId"
+        },
+        {
+          "$ref": "#/components/parameters/audioChannelId"
+        }
+      ],
+      "get": {
+        "summary": "Get Audio Channel Gain Description",
+        "tags": [
+          "AudioChannelGain"
+        ],
+        "responses": {
+          "200": {
+            "description": "Description retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AudioChannelGainDescription"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          },
+          "405": {
+            "$ref": "#/components/responses/NotAllowedResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsResponse"
+          }
+        },
+        "operationId": "audioChannelGainDescription",
+        "description": "Retrieve the audio gain setting description for the audio channel specified by `audioChannelId` on the device specified by `deviceId`",
+        "x-stoplight": {
+          "id": "r8p4lmxsrs5i3"
+        }
+      }
+    },
+    "/v1/devices/{deviceId}/audio-channels/{audioChannelId}/gain/subscription/{transportId}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/deviceId"
+        },
+        {
+          "$ref": "#/components/parameters/audioChannelId"
+        },
+        {
+          "$ref": "#/components/parameters/transportId"
+        }
+      ],
+      "post": {
+        "summary": "Subscribe: Audio Channel Gain",
+        "tags": [
+          "AudioChannelGain"
+        ],
+        "responses": {
+          "201": {
+            "description": "Subscription created successfully."
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          },
+          "405": {
+            "$ref": "#/components/responses/NotAllowedResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsResponse"
+          }
+        },
+        "operationId": "subscribeAudioChannelGain",
+        "description": "Subscribe to changes in the audio gain setting for the audio channel specified by `audioChannelId` on the device specified by `deviceId`.",
+        "callbacks": {
+          "onEvent": {
+            "/ws": {
+              "post": {
+                "requestBody": {
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/AudioChannelGainEvent"
+                      }
+                    }
+                  }
+                },
+                "responses": {
+                  "204": {
+                    "description": "OK"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-stoplight": {
+          "id": "tc4a1jq3z6pt2"
+        }
+      },
+      "delete": {
+        "summary": "Unsubscribe: Audio Channel Gain",
+        "operationId": "unsubscribeAudioChannelGain",
+        "responses": {
+          "204": {
+            "description": "Subscription deleted successfully."
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          },
+          "405": {
+            "$ref": "#/components/responses/NotAllowedResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsResponse"
+          }
+        },
+        "description": "Unsubscribe from changes in the audio gain setting for the audio channel specified by `audioChannelId` on the device specified by `deviceId`.",
+        "tags": [
+          "AudioChannelGain"
+        ],
+        "x-stoplight": {
+          "id": "5tftquqv3jj67"
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "GenericError": {
+        "type": "object",
+        "title": "GenericError",
+        "description": "Prototype error response",
+        "x-tags": [
+          "Devices"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "A URI reference that identifies the problem type.",
+            "readOnly": true
+          },
+          "title": {
+            "type": "string",
+            "description": "Human-readable summary of the problem\ntype. Will be static and not change from occurrence to occurrence of the problem",
+            "readOnly": true
+          },
+          "status": {
+            "type": "number",
+            "description": "The HTTP status code",
+            "readOnly": true
+          },
+          "detail": {
+            "type": "string",
+            "description": "A human-readable explanation specific to this occurrence of the problem.\n",
+            "readOnly": true
+          },
+          "instance": {
+            "type": "string",
+            "description": "A URI reference that identifies the specific occurrence of the problem.",
+            "readOnly": true
+          },
+          "traceId": {
+            "type": "string",
+            "description": "A GUID that can be used to correlate system execution logs associated with the error response."
+          }
+        },
+        "readOnly": true
+      },
+      "PageInfo": {
+        "title": "PageInfo",
+        "type": "object",
+        "x-tags": [
+          "Devices"
+        ],
+        "examples": [
+          {
+            "pageInfo": {
+              "hasNextPage": true,
+              "hasPreviousPage": false,
+              "startCursor": "eyJmIjoiRCIsImEiOiJhNDk3YjFkYi0xYmY3LTExZTktYTAwMC0wMDBlZGRhYWFhYWEifQ==",
+              "endCursor": "eyJmIjoiRCIsImEiOiJkZDYwZDA2YS0wMDAwLTExZGQtYTAwMC0wMDBlZGRjY2NjY2MifQ=="
+            }
+          }
+        ],
+        "description": "`PageInfo` informs the client if there is additional pages of data before or after the data in this response that can be queried. `startCursor` and `endCursor` are used to prepare the next page to request. When `startCursor` and `endCursor` are non-empty strings, they reflect the edges/data at the first and last position in the response being processed. ",
+        "properties": {
+          "hasNextPage": {
+            "type": "boolean",
+            "description": "Whether there is data on the server following this page of data. "
+          },
+          "hasPreviousPage": {
+            "type": "boolean",
+            "description": "Whether there is data on the server prior to this page of data. "
+          },
+          "startCursor": {
+            "type": "string",
+            "description": "If specified, only nodes with a cursor value lexically greater than `startCursor` are returned. This set of nodes is then subject to page limits set by the `first`, `last`, and `endCursor` parameters."
+          },
+          "endCursor": {
+            "type": "string",
+            "description": "If specified, only nodes with a cursor value lexically less than `startCursor` are returned. This set of nodes is then subject to page limits set by the `first`, `last`, and `startCursor` parameters."
+          }
+        }
+      },
+      "DeviceCompatibility": {
+        "title": "DeviceCompatibility",
+        "type": "string",
+        "x-stoplight": {
+          "id": "eq8qvkoybjut1"
+        },
+        "enum": [
+          "INCOMPATIBLE_TOO_OLD",
+          "INCOMPATIBLE_TOO_NEW",
+          "COMPATIBLE_OLD",
+          "COMPATIBLE_NEW",
+          "COMPATIBLE_LATEST"
+        ],
+        "description": "The interface compatibility of a Shure device.",
+        "x-tags": [
+          "Devices"
+        ],
+        "examples": [
+          "COMPATIBLE_LATEST"
+        ],
+        "readOnly": true
+      },
+      "DeviceStates": {
+        "type": "string",
+        "title": "DeviceStates",
+        "enum": [
+          "ONLINE",
+          "OFFLINE",
+          "ERROR",
+          "DISCOVERED"
+        ],
+        "description": "The connectivity lifecycle states of a Shure device",
+        "x-tags": [
+          "Devices"
+        ],
+        "readOnly": true
+      },
+      "DeviceId": {
+        "type": "string",
+        "title": "DeviceId",
+        "description": "Unique ID of a Shure Device",
+        "format": "uuid",
+        "x-tags": [
+          "Devices"
+        ],
+        "example": "DD123456-0000-11DD-A000-000EDDCCCCCC",
+        "readOnly": true
+      },
+      "OnlineDevice": {
+        "title": "OnlineDevice",
+        "example": {
+          "compatibility": "COMPATIBLE_LATEST",
+          "deviceState": "ONLINE",
+          "hardwareIdentity": {
+            "deviceId": "DD123456-0000-11DD-A000-000EDDCCCCCC",
+            "serialNumber": "2AA2123456"
+          },
+          "softwareIdentity": {
+            "firmwareVersion": "4.5.0",
+            "firmwareValid": true,
+            "model": "P300"
+          },
+          "communicationProtocol": {
+            "name": "ESTA.DMP",
+            "address": "192.168.1.100"
+          },
+          "capabilities": [
+            "name",
+            "audio-channels-v2"
+          ]
+        },
+        "x-internal": false,
+        "x-tags": [
+          "Devices"
+        ],
+        "description": "The data model for all Shure devices ready to be interacted within the API. Device specific features are expressed in the capabilities array.",
+        "allOf": [
+          {
+            "x-stoplight": {
+              "id": "pi83gg5madsnv"
+            },
+            "required": [
+              "compatibility"
+            ],
+            "properties": {
+              "compatibility": {
+                "$ref": "#/components/schemas/DeviceCompatibility",
+                "x-stoplight": {
+                  "id": "18cb0fomnduwy"
+                }
+              }
+            }
+          },
+          {
+            "required": [
+              "deviceState"
+            ],
+            "properties": {
+              "deviceState": {
+                "$ref": "#/components/schemas/DeviceStates"
+              }
+            }
+          },
+          {
+            "required": [
+              "hardwareIdentity"
+            ],
+            "properties": {
+              "hardwareIdentity": {
+                "type": "object",
+                "x-tags": [
+                  "Devices"
+                ],
+                "description": "Device properties that are tied to hardware constructs",
+                "required": [
+                  "deviceId",
+                  "serialNumber"
+                ],
+                "properties": {
+                  "deviceId": {
+                    "$ref": "#/components/schemas/DeviceId"
+                  },
+                  "serialNumber": {
+                    "type": "string",
+                    "example": "2AA2123456",
+                    "description": "Manufacturer serial number of a Shure device",
+                    "readOnly": true
+                  }
+                },
+                "readOnly": true
+              }
+            }
+          },
+          {
+            "behavior": "Read Only",
+            "required": [
+              "softwareIdentity"
+            ],
+            "properties": {
+              "softwareIdentity": {
+                "type": "object",
+                "x-tags": [
+                  "Devices"
+                ],
+                "description": "Device properties that are tied to software constructs",
+                "required": [
+                  "firmwareVersion",
+                  "firmwareValid",
+                  "model"
+                ],
+                "properties": {
+                  "firmwareVersion": {
+                    "type": "string",
+                    "x-faker": "system.semver",
+                    "description": "The version number of firmware running on a Shure device.",
+                    "example": "4.5.0",
+                    "readOnly": true
+                  },
+                  "firmwareValid": {
+                    "type": "boolean",
+                    "description": "Flag to indicate whether the firmware versions of all device subsystems match the expected values",
+                    "readOnly": true
+                  },
+                  "model": {
+                    "type": "string",
+                    "example": "P300",
+                    "description": "Shure product model name",
+                    "readOnly": true
+                  }
+                },
+                "readOnly": true
+              }
+            }
+          },
+          {
+            "required": [
+              "communicationProtocol"
+            ],
+            "properties": {
+              "communicationProtocol": {
+                "type": "object",
+                "description": "Properties related to a device's ability to communicate with this instance of System API",
+                "required": [
+                  "name",
+                  "address"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "The name of the primary communication protocol used by a device",
+                    "example": "MQTT",
+                    "readOnly": true
+                  },
+                  "address": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "The communication address of a device expressed in protocol-dependent format",
+                    "readOnly": true
+                  }
+                },
+                "readOnly": true
+              }
+            }
+          },
+          {
+            "description": "The capabilities array indicates which features are available for a given combination of device model & firmwware version. The contents of this array determine which endpoints in the System API are available.",
+            "required": [
+              "capabilities"
+            ],
+            "properties": {
+              "capabilities": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "readOnly": true
+                },
+                "readOnly": true,
+                "example": [
+                  "name",
+                  "audio-channels-v2"
+                ]
+              }
+            }
+          }
+        ],
+        "type": "object"
+      },
+      "DiscoveredDevice": {
+        "type": "object",
+        "title": "DiscoveredDevice",
+        "example": {
+          "compatibility": "COMPATIBLE_LATEST",
+          "deviceState": "DISCOVERED",
+          "hardwareIdentity": {
+            "deviceId": "DD123456-0000-11DD-A000-000EDDCCCCCC"
+          },
+          "softwareIdentity": {
+            "model": "P300"
+          },
+          "communicationProtocol": {
+            "name": "ESTA.DMP",
+            "address": "192.168.1.100"
+          }
+        },
+        "x-internal": false,
+        "x-tags": [
+          "Devices"
+        ],
+        "description": "The data model for all Shure devices which have been discovered, but are not yet ready to be interacted with via the API.",
+        "examples": [
+          {
+            "deviceState": "DISCOVERED",
+            "hardwareIdentity": {
+              "deviceId": "DD123456-0000-11DD-A000-000EDDCCCCCC"
+            },
+            "softwareIdentity": {
+              "model": "P300"
+            },
+            "communicationProtocol": {
+              "name": "ESTA.DMP",
+              "address": "192.168.1.100"
+            }
+          }
+        ],
+        "additionalProperties": false,
+        "required": [
+          "compatibility",
+          "deviceState",
+          "hardwareIdentity",
+          "softwareIdentity",
+          "communicationProtocol"
+        ],
+        "properties": {
+          "compatibility": {
+            "$ref": "#/components/schemas/DeviceCompatibility"
+          },
+          "deviceState": {
+            "$ref": "#/components/schemas/DeviceStates"
+          },
+          "hardwareIdentity": {
+            "type": "object",
+            "description": "Device properties that are tied to hardware constructs",
+            "additionalProperties": false,
+            "required": [
+              "deviceId"
+            ],
+            "properties": {
+              "deviceId": {
+                "$ref": "#/components/schemas/DeviceId"
+              }
+            },
+            "readOnly": true
+          },
+          "softwareIdentity": {
+            "type": "object",
+            "description": "Device properties that are tied to software constructs",
+            "additionalProperties": false,
+            "required": [
+              "model"
+            ],
+            "properties": {
+              "model": {
+                "type": "string",
+                "x-faker": {
+                  "random.arrayElement": [
+                    "- P300"
+                  ]
+                },
+                "example": "P300",
+                "description": "Shure product model name",
+                "readOnly": true
+              }
+            },
+            "readOnly": true
+          },
+          "communicationProtocol": {
+            "type": "object",
+            "description": "Properties related to a device's ability to communicate with this instance of System API",
+            "required": [
+              "name",
+              "address"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "example": "MQTT",
+                "description": "The name of the primary communication protocol used by a device",
+                "readOnly": true
+              },
+              "address": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The communication address of a device expressed in protocol-dependent format",
+                "readOnly": true
+              }
+            },
+            "readOnly": true
+          }
+        }
+      },
+      "ListDevicesResponse": {
+        "title": "ListDevicesResponse",
+        "type": "object",
+        "x-tags": [
+          "Devices"
+        ],
+        "examples": [],
+        "description": "",
+        "properties": {
+          "pageInfo": {
+            "$ref": "#/components/schemas/PageInfo"
+          },
+          "edges": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "cursor": {
+                  "type": "string",
+                  "description": "The cursor value for this edge (aka node). This can be used in a subsequent query in the \"before\" or \"after\" fields."
+                },
+                "node": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/OnlineDevice"
+                    },
+                    {
+                      "$ref": "#/components/schemas/DiscoveredDevice"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "GenericEventEnvelope": {
+        "title": "GenericEventEnvelope",
+        "type": "object",
+        "description": "",
+        "x-tags": [
+          "Devices"
+        ]
+      },
+      "DeviceCapabilities": {
+        "type": "array",
+        "title": "DeviceCapabilities",
+        "description": "Group of device feature(s) or set of functionalities.",
+        "x-tags": [
+          "Devices"
+        ],
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "example": "name",
+              "readOnly": true
+            },
+            "operationIds": {
+              "type": "array",
+              "uniqueItems": true,
+              "example": [
+                "deviceName",
+                "deviceNameDescription",
+                "updateDeviceName",
+                "subscribeDeviceName",
+                "unsubscribeDeviceName"
+              ],
+              "items": {
+                "type": "string"
+              },
+              "readOnly": true
+            }
+          },
+          "required": [
+            "name",
+            "operationIds"
+          ]
+        },
+        "example": [
+          {
+            "name": "name",
+            "operationIds": [
+              "deviceName",
+              "deviceNameDescription",
+              "updateDeviceName",
+              "subscribeDeviceName",
+              "unsubscribeDeviceName"
+            ]
+          },
+          {
+            "name": "audio-channels",
+            "operationIds": [
+              "deviceAudioChannelsV2",
+              "audioChannelCapabilities"
+            ]
+          }
+        ]
+      },
+      "AudioChannelId": {
+        "type": "string",
+        "x-stoplight": {
+          "id": "2620b1ed58151"
+        },
+        "title": "AudioChannelId",
+        "description": "Identifier (unique within a device) for identifying an audio channel amongst the device's collection of audio channels.  ",
+        "example": "eyJhZGRyZXNzIjp7ImhhcmR3YXJlSWQiOiJkZDUyYzkxYi0wMDAwLTExZGQtYTAwMC0wMDBlZGRjY2NjY2MifSwidHlwZSI6IlAzMDBNaXhPdXRwdXRDaGFubmVsT3V0cHV0Iiwic3RydWN0dXJlIjoiQ0hfTUlYPTAiLCJpbmRleCI6MH0=",
+        "x-tags": [
+          "AudioChannels"
+        ]
+      },
+      "AudioChannelRole": {
+        "type": "string",
+        "x-stoplight": {
+          "id": "f34b9f1ddf62d"
+        },
+        "title": "AudioChannelRole",
+        "description": "A discriminator to determine the relative function of a channel in an audio signal chain with one or more devices (e.g. Microphones, Digital Signal Processors, Loudspeakers, etc). The channel role is designated with respect to its purpose in an audio system.",
+        "example": "SOURCE",
+        "x-tags": [
+          "AudioChannels"
+        ],
+        "enum": [
+          "SOURCE",
+          "SINK",
+          "FILTER"
+        ]
+      },
+      "AudioChannelGroupV2": {
+        "type": "string",
+        "title": "AudioChannelGroupV2",
+        "example": "LOBE",
+        "x-tags": [
+          "AudioChannels"
+        ],
+        "description": "Discriminator for audio channel purpose and functionality. \n\nThe values returned from this field will expand over time. Any code using this should remain open to extension to new values to prevent breaking changes on upgrades. If a value were to ever be removed in the future, that change would be considered breaking and a new API would be introduced to communicate the new possible values. \n\n These are the currently supported values for this release:\n- `ADC_INPUT` (New in System API Server 6.7)\n- `AEC_REFERENCE`\n- `AEC_REFERENCE_MIX_OUTPUT` (New in System API Server 6.7)\n- `AES3_INPUT` (New in System API Server TBD)\n- `ANALOG_70V_OUTPUT`\n- `ANALOG_AUX_INPUT`\n- `ANALOG_INPUT` (Added in System API Server 6.4)\n- `ANALOG_OUTPUT`\n- `AURACAST_OUTPUT` (New in System API Server TBD)\n- `AUTOMIX`\n- `AUTOMIX_STEREO` (Added in System API Server 6.6)\n- `AUX_INPUT`\n- `AUX_OUTPUT`\n- `BACK`\n- `BLUETOOTH_INPUT`\n- `BLUETOOTH_OUTPUT`\n- `DANTE_ANALOG_INPUT`\n- `DANTE_AUX_INPUT`\n- `DANTE_INPUT`\n- `DANTE_LINE_INPUT`\n- `DANTE_LINE_OUTPUT`\n- `DANTE_MIC_INPUT`\n- `DANTE_OUTPUT`\n- `DIRECT_OUTPUT`\n- `DIRECT_OUTPUT_ANALOG_INPUT` (Added in System API Server 6.4)\n- `DIRECT_OUTPUT_DANTE_MIC_INPUT` (Added in System API Server 6.6)\n- `EXTERNAL_AUTOMIX` (New in System API Server 6.7) \n- `GENERIC`\n- `HEADPHONE`\n- `LOBE`\n- `LOUDSPEAKER`\n- `MIC`\n- `MIX_OUTPUT`\n- `MOBILE_INPUT`\n- `MOBILE_OUTPUT`\n- `PC_INPUT`\n- `PC_OUTPUT`\n- `PRE_FADE_LISTEN` (Added in System API Server 6.6)\n- `SIGNAL_GENERATOR_INPUT`\n- `SUM`\n- `TRS_INPUT` (Added in System API Server 6.4)\n- `USB_INPUT`\n- `USB_OUTPUT`\n- `VIRTUAL_AUDIO_INPUT`\n- `VIRTUAL_AUDIO_OUTPUT`\n- `XLR_INPUT` (Added in System API Server 6.4)\n\n"
+      },
+      "AudioChannelV2": {
+        "type": "object",
+        "x-stoplight": {
+          "id": "62xvwsfh5rfdv"
+        },
+        "title": "AudioChannel",
+        "example": {
+          "id": "eyJhZGRyZXNzIjp7ImhhcmR3YXJlSWQiOiJkZDUyYzkxYi0wMDAwLTExZGQtYTAwMC0wMDBlZGRjY2NjY2MifSwidHlwZSI6IlAzMDBNaXhPdXRwdXRDaGFubmVsT3V0cHV0Iiwic3RydWN0dXJlIjoiQ0hfTUlYPTAiLCJpbmRleCI6MH0=",
+          "role": "SOURCE",
+          "group": "LOBE",
+          "capabilities": [
+            "gain"
+          ]
+        },
+        "x-tags": [
+          "AudioChannels"
+        ],
+        "description": "Object representing an audio channel with one or more capabilities",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/AudioChannelId",
+            "x-stoplight": {
+              "id": "ng9mxotm4ehud"
+            }
+          },
+          "role": {
+            "$ref": "#/components/schemas/AudioChannelRole",
+            "x-stoplight": {
+              "id": "ja43my8jek684"
+            }
+          },
+          "group": {
+            "$ref": "#/components/schemas/AudioChannelGroupV2",
+            "x-stoplight": {
+              "id": "sa2j39eglqn4k"
+            }
+          },
+          "capabilities": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "x-stoplight": {
+                "id": "z2sndh79bjj9z"
+              }
+            },
+            "example": [
+              "gain",
+              "name"
+            ],
+            "x-stoplight": {
+              "id": "udq6luam8z6z3"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "role",
+          "group",
+          "capabilities"
+        ]
+      },
+      "AudioChannelListV2": {
+        "title": "AudioChannelListV2",
+        "x-stoplight": {
+          "id": "1zs32n2e9rgwj"
+        },
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/AudioChannelV2",
+          "x-stoplight": {
+            "id": "qtu2117q255c4"
+          }
+        },
+        "example": [
+          {
+            "id": "eyJhZGRyZXNzIjp7ImhhcmR3YXJlSWQiOiJkZDUyYzkxYi0wMDAwLTExZGQtYTAwMC0wMDBlZGRjY2NjY2MifSwidHlwZSI6IlAzMDBNaXhPdXRwdXRDaGFubmVsT3V0cHV0Iiwic3RydWN0dXJlIjoiQ0hfTUlYPTAiLCJpbmRleCI6MH0=",
+            "role": "SOURCE",
+            "group": "LOBE",
+            "capabilities": [
+              "gain",
+              "name"
+            ]
+          }
+        ],
+        "x-tags": [
+          "AudioChannels"
+        ],
+        "description": "A container type for a collection of audio channels. Different from its predecessor due to changes in the underlying audio channel group."
+      },
+      "AudioChannelCapabilities": {
+        "type": "array",
+        "x-stoplight": {
+          "id": "d566df6429ffb"
+        },
+        "title": "AudioChannelCapabilities",
+        "description": "Group of audio channel feature(s) or set of functionalities.",
+        "x-tags": [
+          "AudioChannels"
+        ],
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "example": "gain",
+              "readOnly": true
+            },
+            "operationIds": {
+              "type": "array",
+              "uniqueItems": true,
+              "example": [
+                "audioChannelGain",
+                "audioChannelGainDescription",
+                "updateAudioChannelGain",
+                "subscribeAudioChannelGain",
+                "unsubscribeAudioChannelGain"
+              ],
+              "items": {
+                "type": "string"
+              },
+              "readOnly": true
+            }
+          },
+          "required": [
+            "name",
+            "operationIds"
+          ]
+        },
+        "example": [
+          {
+            "name": "gain",
+            "operationIds": [
+              "audioChannelGain",
+              "audioChannelGainDescription",
+              "updateAudioChannelGain",
+              "subscribeAudioChannelGain",
+              "unsubscribeAudioChannelGain"
+            ]
+          },
+          {
+            "name": "name",
+            "operationIds": [
+              "audioChannelName",
+              "audioChannelNameDescription",
+              "updateAudioChannelName",
+              "subscribeAudioChannelName",
+              "unsubscribeAudioChannelName"
+            ]
+          }
+        ]
+      },
+      "DeviceEventEnvelope": {
+        "title": "DeviceEventEnvelope",
+        "description": "",
+        "x-tags": [
+          "Devices"
+        ],
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GenericEventEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "deviceId": {
+                "$ref": "#/components/schemas/DeviceId"
+              }
+            },
+            "required": [
+              "deviceId"
+            ]
+          }
+        ]
+      },
+      "AudioChannelEventEnvelope": {
+        "title": "AudioChannelEventEnvelope",
+        "x-stoplight": {
+          "id": "9074ebaeccc88"
+        },
+        "description": "Event envelope for events that are related to an audio channel within a specific device.",
+        "x-tags": [
+          "AudioChannels"
+        ],
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/DeviceEventEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "audioChannelId": {
+                "$ref": "#/components/schemas/AudioChannelId"
+              }
+            },
+            "required": [
+              "audioChannelId"
+            ]
+          }
+        ]
+      },
+      "AudioChannelNameResponse": {
+        "description": "Response model describing single device audio channel name",
+        "x-stoplight": {
+          "id": "vh1oemhe3irjq"
+        },
+        "type": "object",
+        "title": "AudioChannelNameResponse",
+        "x-tags": [
+          "AudioChannelName"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the audio channel",
+            "readOnly": true,
+            "x-stoplight": {
+              "id": "vx01gg0j3mrx7"
+            }
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "AudioChannelName": {
+        "description": "Single device audio channel name",
+        "x-stoplight": {
+          "id": "eg5y0mgbtj0ca"
+        },
+        "type": "object",
+        "title": "AudioChannelName",
+        "x-tags": [
+          "AudioChannelName"
+        ],
+        "properties": {
+          "name": {
+            "description": "The name of the audio channel",
+            "type": "string",
+            "x-stoplight": {
+              "id": "9z3zzbgz4fpm3"
+            },
+            "example": "Board Chairperson"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "AudioChannelNameDescription": {
+        "title": "AudioChannelNameDescription",
+        "x-stoplight": {
+          "id": "qtogzdnq3nzfa"
+        },
+        "description": "Model describing audio channel naming rules, which may differ between devices and between a device's audio channels, and indicating whether the name is settable.",
+        "x-tags": [
+          "AudioChannelName"
+        ],
+        "type": "object",
+        "examples": [
+          {
+            "constraints": {
+              "name": {
+                "pattern": "^(?!\\s*$)[ a-zA-Z0-9!\"#\\$%&'\\(\\)\\*\\+,\\-\\/:;<>\\?\\[\\\\\\]\\^_`\\{\\|\\}~]{1,31}"
+              },
+              "supportedOperation": {
+                "set": true
+              }
+            }
+          },
+          {
+            "constraints": {
+              "name": {
+                "pattern": "^(?!\\s*$)[ a-zA-Z0-9]{1,8}"
+              },
+              "supportedOperation": {
+                "set": false
+              }
+            }
+          }
+        ],
+        "required": [
+          "constraints",
+          "supportedOperation"
+        ],
+        "properties": {
+          "constraints": {
+            "type": "object",
+            "x-stoplight": {
+              "id": "1gebi6wpkan60"
+            },
+            "required": [
+              "name"
+            ],
+            "properties": {
+              "name": {
+                "type": "object",
+                "x-stoplight": {
+                  "id": "68fytaj8xrejr"
+                },
+                "required": [
+                  "pattern"
+                ],
+                "properties": {
+                  "pattern": {
+                    "type": "string",
+                    "x-stoplight": {
+                      "id": "rcye0yed4j4y4"
+                    },
+                    "format": "regex",
+                    "description": "A regular expression describing the valid values for this audio channel's name. \n\n Audio channel naming rules may differ across devices and across a device's audio channels."
+                  }
+                }
+              }
+            }
+          },
+          "supportedOperation": {
+            "type": "object",
+            "x-stoplight": {
+              "id": "d1bk7c93vvdug"
+            },
+            "required": [
+              "set"
+            ],
+            "properties": {
+              "set": {
+                "type": "boolean",
+                "x-stoplight": {
+                  "id": "yf3eou5b5ldcf"
+                },
+                "description": "Indicates whether this audio channel's name can be set."
+              }
+            }
+          }
+        }
+      },
+      "AudioChannelNameEvent": {
+        "title": "AudioChannelNameEvent",
+        "x-stoplight": {
+          "id": "98e6aymeqwgqe"
+        },
+        "type": "object",
+        "properties": {
+          "envelope": {
+            "allOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "eventName": {
+                    "type": "string",
+                    "enum": [
+                      "AUDIO_CHANNEL_NAME"
+                    ],
+                    "readOnly": true,
+                    "x-stoplight": {
+                      "id": "0zykf4x8u0m64"
+                    }
+                  }
+                },
+                "required": [
+                  "eventName"
+                ],
+                "x-stoplight": {
+                  "id": "qt5xi6zrxa86r"
+                }
+              },
+              {
+                "$ref": "#/components/schemas/AudioChannelEventEnvelope",
+                "x-stoplight": {
+                  "id": "t3y4v7zuvork9"
+                }
+              }
+            ],
+            "x-stoplight": {
+              "id": "fqjl2u9t25stp"
+            }
+          },
+          "body": {
+            "$ref": "#/components/schemas/AudioChannelNameResponse",
+            "x-stoplight": {
+              "id": "jnxd2b3oh376p"
+            }
+          }
+        },
+        "required": [
+          "envelope",
+          "body"
+        ],
+        "x-tags": [
+          "AudioChannelName"
+        ],
+        "description": "Event, emitted when there are changes to the name of a device audio channel",
+        "examples": [
+          {
+            "envelope": {
+              "eventName": "AUDIO_CHANNEL_NAME",
+              "deviceId": "DD123456-0000-11DD-A000-000EDDCCCCCC",
+              "audioChannelId": "eyJhZGRyZXNzIjp7ImhhcmR3YXJlSWQiOiJkZDUyYzkxYi0wMDAwLTExZGQtYTAwMC0wMDBlZGRjY2NjY2MifSwidHlwZSI6IlVzZXJQcmVzZXRPdXRwdXQiLCJzdHJ1Y3R1cmUiOiJQUkVTRVQ9MCIsImluZGV4IjowfQ=="
+            },
+            "body": {
+              "name": "NewName"
+            }
+          }
+        ]
+      },
+      "DeviceNameResponse": {
+        "type": "object",
+        "x-stoplight": {
+          "id": "822dd24e65cb9"
+        },
+        "title": "DeviceNameResponse",
+        "description": "Response model for user-configurable name of a Shure device",
+        "x-tags": [
+          "DeviceName"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "readOnly": true,
+            "x-stoplight": {
+              "id": "5k878imcjmp5e"
+            }
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "readOnly": true,
+        "examples": [
+          {
+            "name": "P300-CA1EB"
+          }
+        ]
+      },
+      "DeviceName": {
+        "title": "DeviceName",
+        "x-stoplight": {
+          "id": "8a78920abc4d6"
+        },
+        "type": "object",
+        "description": "The user-configurable name of a Shure device",
+        "x-tags": [
+          "DeviceName"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "x-stoplight": {
+              "id": "dfmm2685epipo"
+            }
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "examples": [
+          {
+            "name": "P300-CA1EB"
+          }
+        ]
+      },
+      "DeviceNameDescription": {
+        "title": "DeviceNameDescription",
+        "x-stoplight": {
+          "id": "3340af532097e"
+        },
+        "description": "Model describing device naming rules which may differ between devices.",
+        "x-tags": [
+          "DeviceName"
+        ],
+        "type": "object",
+        "examples": [
+          {
+            "constraints": {
+              "name": {
+                "pattern": "^[A-Za-z0-9!\"#$%&'()*+,\\-.\\/:;<=>?@\\\\\\[\\]^_`~ ]{0,31}$"
+              }
+            }
+          }
+        ],
+        "properties": {
+          "constraints": {
+            "type": "object",
+            "x-stoplight": {
+              "id": "yrfrds9hwl9mj"
+            },
+            "required": [
+              "name"
+            ],
+            "properties": {
+              "name": {
+                "type": "object",
+                "x-stoplight": {
+                  "id": "hitd338rxvvfg"
+                },
+                "required": [
+                  "pattern"
+                ],
+                "properties": {
+                  "pattern": {
+                    "type": "string",
+                    "x-stoplight": {
+                      "id": "0ybsnxd3vv5yr"
+                    },
+                    "format": "regex",
+                    "description": "A regular expression describing the valid values for this device's name. \n\n Device naming rules may differ across devices."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "constraints"
+        ]
+      },
+      "DeviceNameEvent": {
+        "title": "DeviceNameEvent",
+        "x-stoplight": {
+          "id": "3b34f1dfefe0d"
+        },
+        "description": "Emitted in response to change in the name of the device.",
+        "examples": [],
+        "x-tags": [
+          "DeviceName"
+        ],
+        "type": "object",
+        "properties": {
+          "envelope": {
+            "allOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "eventName": {
+                    "type": "string",
+                    "enum": [
+                      "DEVICE_NAME"
+                    ],
+                    "readOnly": true,
+                    "x-stoplight": {
+                      "id": "rpbu066ohrd9e"
+                    }
+                  }
+                },
+                "required": [
+                  "eventName"
+                ],
+                "x-stoplight": {
+                  "id": "ro97fu1w4hedg"
+                }
+              },
+              {
+                "$ref": "#/components/schemas/DeviceEventEnvelope",
+                "x-stoplight": {
+                  "id": "phaxn7788ce4h"
+                }
+              }
+            ],
+            "x-stoplight": {
+              "id": "q9euogfhz7t0r"
+            }
+          },
+          "body": {
+            "$ref": "#/components/schemas/DeviceNameResponse",
+            "x-stoplight": {
+              "id": "r61d64qp6ykgx"
+            }
+          }
+        },
+        "required": [
+          "envelope",
+          "body"
+        ]
+      },
+      "AudioChannelGainResponse": {
+        "description": "Response model describing single device audio channel gain value",
+        "x-stoplight": {
+          "id": "3a0bbcc84d169"
+        },
+        "type": "object",
+        "title": "AudioChannelGainResponse",
+        "x-tags": [
+          "AudioChannelGain"
+        ],
+        "properties": {
+          "gain": {
+            "type": "number",
+            "description": "The audio gain value",
+            "readOnly": true
+          }
+        },
+        "required": [
+          "gain"
+        ]
+      },
+      "AudioChannelGain": {
+        "description": "Single device audio channel gain value",
+        "x-stoplight": {
+          "id": "b777cf6b8c6ce"
+        },
+        "type": "object",
+        "title": "AudioChannelGain",
+        "x-tags": [
+          "AudioChannelGain"
+        ],
+        "properties": {
+          "gain": {
+            "description": "The audio channel gain value",
+            "type": "number",
+            "example": -26.3
+          }
+        },
+        "required": [
+          "gain"
+        ]
+      },
+      "AudioChannelGainDescription": {
+        "title": "AudioChannelGainDescription",
+        "x-stoplight": {
+          "id": "kmh58cdgzqa0o"
+        },
+        "type": "object",
+        "x-tags": [
+          "AudioChannelGain"
+        ],
+        "description": "Model describing the schema of the audio channel gain constraints.",
+        "examples": [
+          {
+            "constraints": {
+              "gain": {
+                "range": {
+                  "min": -110,
+                  "max": 30,
+                  "step": 0.1
+                }
+              }
+            }
+          },
+          {
+            "constraints": {
+              "gain": {
+                "range": {
+                  "min": -42,
+                  "max": 18,
+                  "step": 1
+                }
+              }
+            }
+          }
+        ],
+        "properties": {
+          "constraints": {
+            "type": "object",
+            "x-stoplight": {
+              "id": "tk8hszjaw521w"
+            },
+            "required": [
+              "gain"
+            ],
+            "properties": {
+              "gain": {
+                "type": "object",
+                "x-stoplight": {
+                  "id": "7zw7ertkwfs41"
+                },
+                "required": [
+                  "range"
+                ],
+                "properties": {
+                  "range": {
+                    "type": "object",
+                    "x-stoplight": {
+                      "id": "st25xih7te2vd"
+                    },
+                    "required": [
+                      "min",
+                      "max",
+                      "step"
+                    ],
+                    "properties": {
+                      "min": {
+                        "type": "number",
+                        "x-stoplight": {
+                          "id": "03y4cau6030e9"
+                        },
+                        "readOnly": true
+                      },
+                      "max": {
+                        "type": "number",
+                        "x-stoplight": {
+                          "id": "tu930ar35h0bs"
+                        },
+                        "readOnly": true
+                      },
+                      "step": {
+                        "type": "number",
+                        "x-stoplight": {
+                          "id": "fqd516hyqx7nq"
+                        },
+                        "readOnly": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "constraints"
+        ]
+      },
+      "AudioChannelGainEvent": {
+        "title": "AudioChannelGainEvent",
+        "x-stoplight": {
+          "id": "38e962f222141"
+        },
+        "type": "object",
+        "properties": {
+          "envelope": {
+            "allOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "eventName": {
+                    "type": "string",
+                    "enum": [
+                      "AUDIO_CHANNEL_GAIN"
+                    ],
+                    "readOnly": true
+                  }
+                },
+                "required": [
+                  "eventName"
+                ]
+              },
+              {
+                "$ref": "#/components/schemas/AudioChannelEventEnvelope"
+              }
+            ]
+          },
+          "body": {
+            "$ref": "#/components/schemas/AudioChannelGainResponse"
+          }
+        },
+        "required": [
+          "envelope",
+          "body"
+        ],
+        "x-tags": [
+          "AudioChannelGain"
+        ],
+        "description": "Event, emitted when there are changes to the gain of a device audio channel",
+        "example": {
+          "envelope": {
+            "eventName": "AUDIO_CHANNEL_GAIN",
+            "deviceId": "DD123456-0000-11DD-A000-000EDDCCCCCC",
+            "audioChannelId": "eyJhZGRyZXNzIjp7ImhhcmR3YXJlSWQiOiJkZDUyYzkxYi0wMDAwLTExZGQtYTAwMC0wMDBlZGRjY2NjY2MifSwidHlwZSI6IlVzZXJQcmVzZXRPdXRwdXQiLCJzdHJ1Y3R1cmUiOiJQUkVTRVQ9MCIsImluZGV4IjowfQ=="
+          },
+          "body": {
+            "gain": -26.3
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequestResponse": {
+        "description": "The request could not be made. Please check request body and/or URI routing parameters. Are you sure these devices support this operation?",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/GenericError"
+            }
+          }
+        }
+      },
+      "UnauthorizedResponse": {
+        "description": "Authorization is required to access System API. Did you provide the proper authorization header for this request?",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/GenericError"
+            }
+          }
+        },
+        "headers": {
+          "www-authenticate": {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "api-key"
+              ]
+            },
+            "description": "Information about the authentication scheme."
+          }
+        }
+      },
+      "ForbiddenResponse": {
+        "description": "Authorization was provided but the permission to execute this request is explicitly denied.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/GenericError"
+            }
+          }
+        }
+      },
+      "NotAllowedResponse": {
+        "description": "The provided HTTP request method is not allowed on the endpoint.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/GenericError"
+            }
+          }
+        }
+      },
+      "NotFoundResponse": {
+        "description": "The device was not found on the network. Was the correct device ID supplied? Was the device ID properly formed? Was the device powered on and connected to the correct network?",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/GenericError"
+            }
+          }
+        },
+        "headers": {}
+      },
+      "TooManyRequestsResponse": {
+        "description": "The request was rejected because a rate limit or quota was exceeded.\n\nWhen the `Retry-After` response header is present, its value is the number of seconds the client should wait before retrying. When the header is absent, a longer-period allowance has been exhausted and retrying will continue to fail until it resets.\n\nWhere and how these limits apply depends on the deployment; consult the deployment-specific documentation for details.",
+        "headers": {
+          "Retry-After": {
+            "description": "Number of seconds the client should wait before retrying. Present for short-term rate limiting; absent when a longer-period allowance has been exhausted.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/GenericError"
+            }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "transportId": {
+        "name": "transportId",
+        "in": "path",
+        "schema": {
+          "type": "string"
+        },
+        "description": "A universally unique identifier of a subscription transport",
+        "required": true
+      },
+      "Content-Type": {
+        "name": "Content-Type",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "application/json"
+          ]
+        },
+        "description": "The MIME type of the resource or the data. The value will be 'application/json' for most requests and responses in this API."
+      },
+      "deviceId": {
+        "name": "deviceId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid",
+          "example": "dd6088df-0000-11dd-a000-000eddcccccc"
+        },
+        "description": "Unique ID of a Shure device"
+      },
+      "audioChannelId": {
+        "name": "audioChannelId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "A string to uniquely (within a device) identify an audio channel within a collection of audio channels"
+      },
+      "first": {
+        "name": "first",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "description": "Limit the number of records to return starting from the beginning of the data. \n\n The actual number of records returned may be less depending on \n\n - Other query parameters \n - The remaining data on the server \n - The integrity of the data on the server (e.g is all required data for the record able to be returned). The default value for this limit is 1000."
+      },
+      "last": {
+        "name": "last",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "description": "Limit the number of records to return starting from the end of the data.  \n\n The actual number of records returned may be less depending on \n\n - Other query parameters \n - The remaining data on the server \n - The integrity of the data on the server (e.g is all required data for the record able to be returned)"
+      },
+      "before": {
+        "name": "before",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "A url-encoded cursor value used by the server to filter the results. Only records with a cursor lexically less than the value of `before` will be returned."
+      },
+      "after": {
+        "name": "after",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "A url-encoded cursor value used by the server to filter the results. Only records with a cursor lexically greater than the value of `after` will be returned."
+      }
+    },
+    "requestBodies": {},
+    "securitySchemes": {
+      "OAuth2ClientCredentials": {
+        "type": "oauth2",
+        "description": "OAuth 2.0 Client Credentials flow for System API Cloud",
+        "flows": {
+          "clientCredentials": {
+            "tokenUrl": "https://apis.cloud.shure.com/v2/oauth2/token",
+            "scopes": {}
+          }
+        }
+      }
+    }
+  }
+}
