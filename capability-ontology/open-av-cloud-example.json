@@ -8,39 +8,13 @@
       "name": "Shure Incorporated",
       "url": "https://www.shure.com/en-US",
       "email": "support@shure.com"
-    }
+    },
+    "x-shure-specification-build-number": "0.0.1.92"
   },
   "servers": [
     {
       "url": "https://system-api.devices.cloud.shure.com",
       "description": "openav-cloud-example"
-    }
-  ],
-  "security": [
-    {
-      "OAuth2ClientCredentials": []
-    }
-  ],
-  "tags": [
-    {
-      "name": "Devices",
-      "description": "Overview of your devices"
-    },
-    {
-      "name": "AudioChannels",
-      "description": "Overview of a device's audio channels"
-    },
-    {
-      "name": "AudioChannelGain",
-      "description": "Monitor and control the gain (loudness) of an audio channel"
-    },
-    {
-      "name": "AudioChannelName",
-      "description": "Name of an audio channel"
-    },
-    {
-      "name": "DeviceName",
-      "description": "Get a device's name, or rename it"
     }
   ],
   "paths": {
@@ -55,6 +29,40 @@
                 "schema": {
                   "$ref": "#/components/schemas/ListDevicesResponse"
                 }
+              }
+            },
+            "links": {
+              "deviceCapabilities": {
+                "description": "This link can be followed if `$response.body#/capabilities` contains `capabilities`",
+                "operationId": "deviceCapabilities"
+              },
+              "deviceAudioChannelsV2": {
+                "description": "This link can be followed if `$response.body#/capabilities` contains `audio-channels-v2`",
+                "operationId": "deviceAudioChannelsV2"
+              },
+              "rebootDevice": {
+                "description": "This link can be followed if `$response.body#/capabilities` contains `reboot`",
+                "operationId": "rebootDevice"
+              },
+              "deviceName": {
+                "description": "This link can be followed if `$response.body#/capabilities` contains `name`",
+                "operationId": "deviceName"
+              },
+              "updateDeviceName": {
+                "description": "This link can be followed if `$response.body#/capabilities` contains `name`",
+                "operationId": "updateDeviceName"
+              },
+              "deviceNameDescription": {
+                "description": "This link can be followed if `$response.body#/capabilities` contains `name`",
+                "operationId": "deviceNameDescription"
+              },
+              "subscribeDeviceName": {
+                "description": "This link can be followed if `$response.body#/capabilities` contains `name`",
+                "operationId": "subscribeDeviceName"
+              },
+              "unsubscribeDeviceName": {
+                "description": "This link can be followed if `$response.body#/capabilities` contains `name`",
+                "operationId": "unsubscribeDeviceName"
               }
             }
           },
@@ -212,7 +220,52 @@
                 }
               }
             },
-            "links": {}
+            "links": {
+              "audioChannelCapabilities": {
+                "description": "This link can be followed if `$response.body#/capabilities` contains `capabilities`",
+                "operationId": "audioChannelCapabilities"
+              },
+              "audioChannelName": {
+                "description": "This link can be followed if `$response.body#/capabilities` contains `name`",
+                "operationId": "audioChannelName"
+              },
+              "updateAudioChannelName": {
+                "description": "This link can be followed if `$response.body#/capabilities` contains `name`",
+                "operationId": "updateAudioChannelName"
+              },
+              "audioChannelNameDescription": {
+                "description": "This link can be followed if `$response.body#/capabilities` contains `name`",
+                "operationId": "audioChannelNameDescription"
+              },
+              "subscribeAudioChannelName": {
+                "description": "This link can be followed if `$response.body#/capabilities` contains `name`",
+                "operationId": "subscribeAudioChannelName"
+              },
+              "unsubscribeAudioChannelName": {
+                "description": "This link can be followed if `$response.body#/capabilities` contains `name`",
+                "operationId": "unsubscribeAudioChannelName"
+              },
+              "audioChannelGain": {
+                "description": "This link can be followed if `$response.body#/capabilities` contains `gain`",
+                "operationId": "audioChannelGain"
+              },
+              "updateAudioChannelGain": {
+                "description": "This link can be followed if `$response.body#/capabilities` contains `gain`",
+                "operationId": "updateAudioChannelGain"
+              },
+              "audioChannelGainDescription": {
+                "description": "This link can be followed if `$response.body#/capabilities` contains `gain`",
+                "operationId": "audioChannelGainDescription"
+              },
+              "subscribeAudioChannelGain": {
+                "description": "This link can be followed if `$response.body#/capabilities` contains `gain`",
+                "operationId": "subscribeAudioChannelGain"
+              },
+              "unsubscribeAudioChannelGain": {
+                "description": "This link can be followed if `$response.body#/capabilities` contains `gain`",
+                "operationId": "unsubscribeAudioChannelGain"
+              }
+            }
           },
           "400": {
             "$ref": "#/components/responses/BadRequestResponse"
@@ -479,7 +532,7 @@
           }
         },
         "operationId": "subscribeAudioChannelName",
-        "description": "Subscribe to changes to the name for the audio channel specified by `audioChannelId` on the device specified by `deviceId`.",
+        "description": "Subscribe to changes to the name for the audio channel specified by `audioChannelId` on the device specified by `deviceId`.\n\nEvents emitted: [`AudioChannelNameEvent`](API/openav-cloud-example.json/components/schemas/AudioChannelNameEvent)",
         "callbacks": {
           "onEvent": {
             "/ws": {
@@ -532,6 +585,48 @@
         "description": "Unsubscribe from changes to the name for the audio channel specified by `audioChannelId` on the device specified by `deviceId`.",
         "tags": [
           "AudioChannelName"
+        ]
+      }
+    },
+    "/v1/devices/{deviceId}/reboot": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/deviceId"
+        }
+      ],
+      "post": {
+        "summary": "Reboot Device",
+        "operationId": "rebootDevice",
+        "responses": {
+          "202": {
+            "description": "Request accepted for the specified device."
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          },
+          "405": {
+            "$ref": "#/components/responses/NotAllowedResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsResponse"
+          }
+        },
+        "description": "Reboot the device specified by `deviceId`. This operation is permitted when the device is in the ONLINE, DISCOVERED and ERROR states, though there is no guarantee of success in the DISCOVERED and ERROR states.",
+        "x-batch": {
+          "conflictsWithSameDevice": true,
+          "reason": "Causes the device to go offline immediately; any other batch request targeting the same device will fail unpredictably."
+        },
+        "tags": [
+          "DeviceMaintenance"
         ]
       }
     },
@@ -709,7 +804,7 @@
             "$ref": "#/components/responses/TooManyRequestsResponse"
           }
         },
-        "description": "Subscribe to the name of the device specified by `deviceId`",
+        "description": "Subscribe to the name of the device specified by `deviceId`\n\nEvents emitted: [`DeviceNameEvent`](API/openav-cloud-example.json/components/schemas/DeviceNameEvent)",
         "callbacks": {
           "onEvent": {
             "/ws": {
@@ -960,7 +1055,7 @@
           }
         },
         "operationId": "subscribeAudioChannelGain",
-        "description": "Subscribe to changes in the audio gain setting for the audio channel specified by `audioChannelId` on the device specified by `deviceId`.",
+        "description": "Subscribe to changes in the audio gain setting for the audio channel specified by `audioChannelId` on the device specified by `deviceId`.\n\nEvents emitted: [`AudioChannelGainEvent`](API/openav-cloud-example.json/components/schemas/AudioChannelGainEvent)",
         "callbacks": {
           "onEvent": {
             "/ws": {
@@ -1581,7 +1676,7 @@
         "x-tags": [
           "AudioChannels"
         ],
-        "description": "Discriminator for audio channel purpose and functionality. \n\nThe values returned from this field will expand over time. Any code using this should remain open to extension to new values to prevent breaking changes on upgrades. If a value were to ever be removed in the future, that change would be considered breaking and a new API would be introduced to communicate the new possible values. \n\n These are the currently supported values for this release:\n- `ADC_INPUT` (New in System API Server 6.7)\n- `AEC_REFERENCE`\n- `AEC_REFERENCE_MIX_OUTPUT` (New in System API Server 6.7)\n- `AES3_INPUT` (New in System API Server TBD)\n- `ANALOG_70V_OUTPUT`\n- `ANALOG_AUX_INPUT`\n- `ANALOG_INPUT` (Added in System API Server 6.4)\n- `ANALOG_OUTPUT`\n- `AURACAST_OUTPUT` (New in System API Server TBD)\n- `AUTOMIX`\n- `AUTOMIX_STEREO` (Added in System API Server 6.6)\n- `AUX_INPUT`\n- `AUX_OUTPUT`\n- `BACK`\n- `BLUETOOTH_INPUT`\n- `BLUETOOTH_OUTPUT`\n- `DANTE_ANALOG_INPUT`\n- `DANTE_AUX_INPUT`\n- `DANTE_INPUT`\n- `DANTE_LINE_INPUT`\n- `DANTE_LINE_OUTPUT`\n- `DANTE_MIC_INPUT`\n- `DANTE_OUTPUT`\n- `DIRECT_OUTPUT`\n- `DIRECT_OUTPUT_ANALOG_INPUT` (Added in System API Server 6.4)\n- `DIRECT_OUTPUT_DANTE_MIC_INPUT` (Added in System API Server 6.6)\n- `EXTERNAL_AUTOMIX` (New in System API Server 6.7) \n- `GENERIC`\n- `HEADPHONE`\n- `LOBE`\n- `LOUDSPEAKER`\n- `MIC`\n- `MIX_OUTPUT`\n- `MOBILE_INPUT`\n- `MOBILE_OUTPUT`\n- `PC_INPUT`\n- `PC_OUTPUT`\n- `PRE_FADE_LISTEN` (Added in System API Server 6.6)\n- `SIGNAL_GENERATOR_INPUT`\n- `SUM`\n- `TRS_INPUT` (Added in System API Server 6.4)\n- `USB_INPUT`\n- `USB_OUTPUT`\n- `VIRTUAL_AUDIO_INPUT`\n- `VIRTUAL_AUDIO_OUTPUT`\n- `XLR_INPUT` (Added in System API Server 6.4)\n\n"
+        "description": "Discriminator for audio channel purpose and functionality. \n\nThe values returned from this field will expand over time. Any code using this should remain open to extension to new values to prevent breaking changes on upgrades. If a value were to ever be removed in the future, that change would be considered breaking and a new API would be introduced to communicate the new possible values. \n\n These are the currently supported values for this release:\n- `ADC_INPUT` (New in System API Server 6.7)\n- `AEC_REFERENCE`\n- `AEC_REFERENCE_MIX_OUTPUT` (New in System API Server 6.7)\n- `AES3_INPUT` (New in System API Server 6.11)\n- `ANALOG_70V_OUTPUT`\n- `ANALOG_AUX_INPUT`\n- `ANALOG_INPUT` (Added in System API Server 6.4)\n- `ANALOG_OUTPUT`\n- `AURACAST_OUTPUT` (New in System API Server 6.11)\n- `AUTOMIX`\n- `AUTOMIX_STEREO` (Added in System API Server 6.6)\n- `AUX_INPUT`\n- `AUX_OUTPUT`\n- `BACK`\n- `BLUETOOTH_INPUT`\n- `BLUETOOTH_OUTPUT`\n- `DANTE_ANALOG_INPUT`\n- `DANTE_AUX_INPUT`\n- `DANTE_INPUT`\n- `DANTE_LINE_INPUT`\n- `DANTE_LINE_OUTPUT`\n- `DANTE_MIC_INPUT`\n- `DANTE_OUTPUT`\n- `DIRECT_OUTPUT`\n- `DIRECT_OUTPUT_ANALOG_INPUT` (Added in System API Server 6.4)\n- `DIRECT_OUTPUT_DANTE_MIC_INPUT` (Added in System API Server 6.6)\n- `EXTERNAL_AUTOMIX` (New in System API Server 6.7) \n- `GENERIC`\n- `HEADPHONE`\n- `LOBE`\n- `LOUDSPEAKER`\n- `MIC`\n- `MIX_OUTPUT`\n- `MOBILE_INPUT`\n- `MOBILE_OUTPUT`\n- `PC_INPUT`\n- `PC_OUTPUT`\n- `PRE_FADE_LISTEN` (Added in System API Server 6.6)\n- `SIGNAL_GENERATOR_INPUT`\n- `SUM`\n- `TRS_INPUT` (Added in System API Server 6.4)\n- `USB_INPUT`\n- `USB_OUTPUT`\n- `VIRTUAL_AUDIO_INPUT`\n- `VIRTUAL_AUDIO_OUTPUT`\n- `XLR_INPUT` (Added in System API Server 6.4)\n\n"
       },
       "AudioChannelV2": {
         "type": "object",
@@ -2528,5 +2623,36 @@
         }
       }
     }
-  }
+  },
+  "tags": [
+    {
+      "name": "Devices",
+      "description": "Overview of your devices"
+    },
+    {
+      "name": "AudioChannels",
+      "description": "Overview of a device's audio channels"
+    },
+    {
+      "name": "AudioChannelGain",
+      "description": "Monitor and control the gain (loudness) of an audio channel"
+    },
+    {
+      "name": "AudioChannelName",
+      "description": "Name of an audio channel"
+    },
+    {
+      "name": "DeviceMaintenance",
+      "description": "Maintain or troubleshoot a device"
+    },
+    {
+      "name": "DeviceName",
+      "description": "Get a device's name, or rename it"
+    }
+  ],
+  "security": [
+    {
+      "OAuth2ClientCredentials": []
+    }
+  ]
 }
